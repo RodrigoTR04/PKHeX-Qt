@@ -42,6 +42,119 @@ public static class NativeExports
         return App.Session is null ? 0 : 1;
     }
 
+    public static int SelectSlot(IntPtr arg, int size)
+    {
+        try
+        {
+            var session = RequireSession();
+            ParseSlotKey(ReadUtf8(arg, size), out var party, out var box, out var slot);
+            if (party)
+                session.SelectPartySlot(slot);
+            else
+                session.SelectBoxSlot(box, slot);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int SetCurrentBox(IntPtr arg, int size)
+    {
+        try
+        {
+            var session = RequireSession();
+            if (!int.TryParse(ReadUtf8(arg, size), out var box))
+                return 1;
+            session.CurrentBox = box;
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int GetStorageLayout(IntPtr arg, int size)
+    {
+        try
+        {
+            var session = RequireSession();
+            if (arg == IntPtr.Zero || size < 16)
+                return 1;
+            Span<int> values = stackalloc int[4];
+            values[0] = session.BoxCount;
+            values[1] = session.BoxSlotCount;
+            values[2] = session.PartySlotCount;
+            values[3] = session.CurrentBox;
+            Marshal.Copy(values.ToArray(), 0, arg, 4);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int PrepareSlotPng(IntPtr arg, int size)
+    {
+        try
+        {
+            var session = RequireSession();
+            var key = ReadUtf8(arg, size);
+            _preparedPng = key.StartsWith("wallpaper:", StringComparison.Ordinal)
+                ? session.ComposeWallpaperPng(int.Parse(key["wallpaper:".Length..], System.Globalization.CultureInfo.InvariantCulture))
+                : ComposeSlot(session, key);
+            return _preparedPng.Length;
+        }
+        catch
+        {
+            _preparedPng = null;
+            return -1;
+        }
+    }
+
+    public static int CopyPreparedPng(IntPtr arg, int size)
+    {
+        if (_preparedPng is null || arg == IntPtr.Zero || size < _preparedPng.Length)
+            return 1;
+        Marshal.Copy(_preparedPng, 0, arg, _preparedPng.Length);
+        return 0;
+    }
+
+    private static byte[]? _preparedPng;
+
+    private static EditorSession RequireSession()
+        => App.Session ?? throw new InvalidOperationException("No save is open.");
+
+    private static byte[] ComposeSlot(EditorSession session, string key)
+    {
+        ParseSlotKey(key, out var party, out var box, out var slot);
+        return party ? session.ComposePartySlotPng(slot) : session.ComposeBoxSlotPng(box, slot);
+    }
+
+    private static void ParseSlotKey(string key, out bool party, out int box, out int slot)
+    {
+        var parts = key.Split(':');
+        if (parts.Length == 2 && parts[0] == "party" && int.TryParse(parts[1], out slot))
+        {
+            party = true;
+            box = 0;
+            return;
+        }
+
+        if (parts.Length == 3 && parts[0] == "box"
+            && int.TryParse(parts[1], out box)
+            && int.TryParse(parts[2], out slot))
+        {
+            party = false;
+            return;
+        }
+
+        throw new FormatException("Slot key was not box:box:slot or party:slot.");
+    }
+
     private static string ReadUtf8(IntPtr arg, int size)
     {
         if (arg == IntPtr.Zero)

@@ -4,6 +4,7 @@
 #include <hostfxr.h>
 #include <nethost.h>
 
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -108,6 +109,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("OpenPath", &_openPath);
     load("SavePath", &_savePath);
     load("HasSession", &_hasSession);
+    load("SelectSlot", &_selectSlot);
+    load("SetCurrentBox", &_setCurrentBox);
+    load("GetStorageLayout", &_getStorageLayout);
+    load("PrepareSlotPng", &_prepareSlotPng);
+    load("CopyPreparedPng", &_copyPreparedPng);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -131,6 +137,44 @@ bool DotNetEditorBridge::hasSession() const
     if (_hasSession == nullptr)
         return false;
     return _hasSession(nullptr, 0) == 1;
+}
+
+bool DotNetEditorBridge::selectSlot(const QString &key)
+{
+    return call(_selectSlot, key);
+}
+
+bool DotNetEditorBridge::setCurrentBox(int box)
+{
+    return call(_setCurrentBox, QString::number(box));
+}
+
+bool DotNetEditorBridge::storageLayout(StorageLayout &out) const
+{
+    if (_getStorageLayout == nullptr)
+        return false;
+    int values[4]{};
+    if (_getStorageLayout(values, static_cast<int>(sizeof(values))) != 0)
+        return false;
+    out.boxCount = values[0];
+    out.boxSlotCount = values[1];
+    out.partySlotCount = values[2];
+    out.currentBox = values[3];
+    return true;
+}
+
+QByteArray DotNetEditorBridge::slotPng(const QString &key)
+{
+    if (_prepareSlotPng == nullptr || _copyPreparedPng == nullptr)
+        return {};
+    QByteArray utf8 = key.toUtf8();
+    const int length = _prepareSlotPng(utf8.data(), utf8.size());
+    if (length <= 0)
+        return {};
+    QByteArray png(length, '\0');
+    if (_copyPreparedPng(png.data(), png.size()) != 0)
+        return {};
+    return png;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

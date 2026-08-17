@@ -3,6 +3,12 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QByteArray>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QEvent>
+#include <QLabel>
+#include <QMouseEvent>
 #include <QPushButton>
 #include <QSplitter>
 #include <QString>
@@ -15,6 +21,8 @@ class FakeEditor : public EditorBridge
 public:
     QString lastOpened;
     QString lastSaved;
+    QString lastSelect;
+    int lastBox = -1;
     bool session = false;
 
     bool openPath(const QString &path) override
@@ -33,6 +41,31 @@ public:
     bool hasSession() const override
     {
         return session;
+    }
+
+    bool selectSlot(const QString &key) override
+    {
+        lastSelect = key;
+        return true;
+    }
+
+    bool setCurrentBox(int box) override
+    {
+        lastBox = box;
+        return true;
+    }
+
+    bool storageLayout(StorageLayout &out) const override
+    {
+        out = StorageLayout{};
+        if (lastBox >= 0)
+            out.currentBox = lastBox;
+        return true;
+    }
+
+    QByteArray slotPng(const QString &) override
+    {
+        return {};
     }
 };
 
@@ -129,6 +162,32 @@ int main(int argc, char *argv[])
 
     if (!window.styleSheet().isEmpty())
         return 16;
+
+    auto *box = window.findChild<QWidget *>(QStringLiteral("Box"));
+    auto *boxGrid = window.findChild<QWidget *>(QStringLiteral("BoxPokeGrid"));
+    auto *boxSelect = window.findChild<QComboBox *>(QStringLiteral("CB_BoxSelect"));
+    auto *party = window.findChild<QWidget *>(QStringLiteral("SL_Party"));
+    auto *partyGrid = window.findChild<QWidget *>(QStringLiteral("PartyPokeGrid"));
+    if (box == nullptr || boxGrid == nullptr || boxSelect == nullptr || party == nullptr || partyGrid == nullptr)
+        return 17;
+
+    auto *slot = boxGrid->findChild<QLabel *>(QString::fromUtf8("Pokémon Grid Row 00 Column 00"));
+    if (slot == nullptr)
+        return 18;
+
+    QMouseEvent press(
+        QEvent::MouseButtonPress,
+        QPointF(1, 1),
+        QPointF(1, 1),
+        Qt::LeftButton,
+        Qt::LeftButton,
+        Qt::NoModifier);
+    QCoreApplication::sendEvent(slot, &press);
+    if (editor.lastSelect != QLatin1String("box:0:0"))
+    {
+        std::cerr << "select was " << editor.lastSelect.toStdString() << "\n";
+        return 19;
+    }
 
     return 0;
 }
