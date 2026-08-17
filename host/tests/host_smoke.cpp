@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QEvent>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSplitter>
@@ -66,6 +67,36 @@ public:
     QByteArray slotPng(const QString &) override
     {
         return {};
+    }
+
+    QString getField(const QString &) override
+    {
+        return {};
+    }
+
+    bool setField(const QString &, const QString &) override
+    {
+        return true;
+    }
+
+    bool commitCurrent() override
+    {
+        return true;
+    }
+
+    bool legalityValid() const override
+    {
+        return true;
+    }
+
+    QString legalityReport(bool) override
+    {
+        return QStringLiteral("Valid.");
+    }
+
+    QString fieldChoices(const QString &) override
+    {
+        return QStringLiteral("1\tBulbasaur");
     }
 };
 
@@ -187,6 +218,18 @@ int main(int argc, char *argv[])
     {
         std::cerr << "select was " << editor.lastSelect.toStdString() << "\n";
         return 19;
+    }
+
+    auto *nickname = window.findChild<QLineEdit *>(QStringLiteral("TB_Nickname"));
+    auto *ot = window.findChild<QLineEdit *>(QStringLiteral("TB_OT"));
+    if (window.findChild<QComboBox *>(QStringLiteral("CB_Species")) == nullptr || nickname == nullptr || ot == nullptr)
+        return 20;
+    const auto nickFamily = nickname->font().family();
+    if (!nickFamily.contains(QStringLiteral("PGL"), Qt::CaseInsensitive)
+        && !nickFamily.contains(QStringLiteral("Dings"), Qt::CaseInsensitive))
+    {
+        std::cerr << "nickname font was " << nickFamily.toStdString() << "\n";
+        return 21;
     }
 
     return 0;

@@ -61,6 +61,7 @@ set(HOST_SOURCES
   src/LangCatalog.cpp
   src/SavToolChrome.cpp
   src/SlotChrome.cpp
+  src/PkmTabChrome.cpp
 )
 set(HOST_HEADERS
   src/MainWindow.h
@@ -68,6 +69,7 @@ set(HOST_HEADERS
   src/LangCatalog.h
   src/SavToolChrome.h
   src/SlotChrome.h
+  src/PkmTabChrome.h
 )
 
 add_executable(pkhex-qt
@@ -139,6 +141,24 @@ function(pkhexqt_copy_assets target)
 endfunction()
 
 pkhexqt_copy_assets(pkhex-qt)
+
+function(pkhexqt_copy_fonts target)
+  add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E make_directory
+      "$<TARGET_FILE_DIR:${target}>/fonts"
+      "$<TARGET_FILE_DIR:${target}>/assets/sprites"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/PKHeX-26.07.07/PKHeX.WinForms/Resources/byte/PGLDings-NormalRegular.ttf"
+      "$<TARGET_FILE_DIR:${target}>/fonts/PGLDings-NormalRegular.ttf"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/PKHeX-26.07.07/PKHeX.WinForms/Resources/img/Accents/valid.png"
+      "${CMAKE_SOURCE_DIR}/PKHeX-26.07.07/PKHeX.WinForms/Resources/img/Accents/warn.png"
+      "$<TARGET_FILE_DIR:${target}>/assets/sprites"
+    VERBATIM)
+endfunction()
+
+pkhexqt_copy_fonts(pkhex-qt)
+pkhexqt_copy_fonts(pkhex-qt-host-tests)
 
 add_test(NAME host_title_cli_open_save COMMAND pkhex-qt-host-tests)
 set_tests_properties(host_title_cli_open_save PROPERTIES

@@ -123,7 +123,110 @@ public static class NativeExports
         return 0;
     }
 
+    public static int GetField(IntPtr arg, int size)
+    {
+        try
+        {
+            _preparedText = RequireSession().GetField(ReadUtf8(arg, size));
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SetField(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8(arg, size);
+            var split = raw.IndexOf('=');
+            if (split <= 0)
+                return 1;
+            RequireSession().SetField(raw[..split], raw[(split + 1)..]);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int CommitCurrent(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            RequireSession().CommitCurrent();
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int LegalityValid(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().LegalityValid ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PrepareLegalityReport(IntPtr arg, int size)
+    {
+        try
+        {
+            var verbose = ReadUtf8(arg, size) == "1";
+            _preparedText = RequireSession().LegalityReport(verbose);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int GetChoices(IntPtr arg, int size)
+    {
+        try
+        {
+            _preparedText = RequireSession().FieldChoices(ReadUtf8(arg, size));
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int CopyPreparedText(IntPtr arg, int size)
+    {
+        if (_preparedText is null || arg == IntPtr.Zero)
+            return 1;
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(_preparedText);
+        if (size < utf8.Length)
+            return 1;
+        Marshal.Copy(utf8, 0, arg, utf8.Length);
+        return 0;
+    }
+
     private static byte[]? _preparedPng;
+    private static string? _preparedText;
+
+    private static int EncodingLength(string text) => System.Text.Encoding.UTF8.GetByteCount(text);
 
     private static EditorSession RequireSession()
         => App.Session ?? throw new InvalidOperationException("No save is open.");

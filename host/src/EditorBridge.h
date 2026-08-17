@@ -1,7 +1,6 @@
 #pragma once
 
 class QString;
-
 class QByteArray;
 
 struct StorageLayout
@@ -23,4 +22,10 @@ public:
     virtual bool setCurrentBox(int box) = 0;
     virtual bool storageLayout(StorageLayout &out) const = 0;
     virtual QByteArray slotPng(const QString &key) = 0;
+    virtual QString getField(const QString &name) = 0;
+    virtual bool setField(const QString &name, const QString &value) = 0;
+    virtual bool commitCurrent() = 0;
+    virtual bool legalityValid() const = 0;
+    virtual QString legalityReport(bool verbose) = 0;
+    virtual QString fieldChoices(const QString &name) = 0;
 };

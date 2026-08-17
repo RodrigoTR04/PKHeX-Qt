@@ -114,6 +114,13 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("GetStorageLayout", &_getStorageLayout);
     load("PrepareSlotPng", &_prepareSlotPng);
     load("CopyPreparedPng", &_copyPreparedPng);
+    load("GetField", &_getField);
+    load("SetField", &_setField);
+    load("CommitCurrent", &_commitCurrent);
+    load("LegalityValid", &_legalityValid);
+    load("PrepareLegalityReport", &_prepareLegalityReport);
+    load("GetChoices", &_getChoices);
+    load("CopyPreparedText", &_copyPreparedText);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -175,6 +182,56 @@ QByteArray DotNetEditorBridge::slotPng(const QString &key)
     if (_copyPreparedPng(png.data(), png.size()) != 0)
         return {};
     return png;
+}
+
+QString DotNetEditorBridge::readText(component_entry_point_fn prepare, const QString &key) const
+{
+    if (prepare == nullptr || _copyPreparedText == nullptr)
+        return {};
+    QByteArray utf8 = key.toUtf8();
+    const int length = prepare(utf8.data(), utf8.size());
+    if (length < 0)
+        return {};
+    if (length == 0)
+        return {};
+    QByteArray buf(length, '\0');
+    if (_copyPreparedText(buf.data(), buf.size()) != 0)
+        return {};
+    return QString::fromUtf8(buf);
+}
+
+QString DotNetEditorBridge::getField(const QString &name)
+{
+    return readText(_getField, name);
+}
+
+bool DotNetEditorBridge::setField(const QString &name, const QString &value)
+{
+    return call(_setField, name + QLatin1Char('=') + value);
+}
+
+bool DotNetEditorBridge::commitCurrent()
+{
+    if (_commitCurrent == nullptr)
+        return false;
+    return _commitCurrent(nullptr, 0) == 0;
+}
+
+bool DotNetEditorBridge::legalityValid() const
+{
+    if (_legalityValid == nullptr)
+        return false;
+    return _legalityValid(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::legalityReport(bool verbose)
+{
+    return readText(_prepareLegalityReport, verbose ? QStringLiteral("1") : QStringLiteral("0"));
+}
+
+QString DotNetEditorBridge::fieldChoices(const QString &name)
+{
+    return readText(_getChoices, name);
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const
