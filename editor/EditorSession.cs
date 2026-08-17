@@ -30,6 +30,7 @@ public sealed class EditorSession
 
     private readonly ArtworkSpriteComposer _sprites = new();
     private InventoryEditor? _inventory;
+    private PokedexEditor? _pokedex;
 
     private EditorSession(SaveFile sav)
     {
@@ -115,6 +116,45 @@ public sealed class EditorSession
         editor.ApplyJson(json);
         editor.Save();
         _inventory = null;
+    }
+
+    public PokedexEditor Pokedex =>
+        _pokedex ?? throw new InvalidOperationException("Pokédex is not open.");
+
+    public bool HasPokedexEditor => PokedexEditor.Supports(_sav);
+
+    public void OpenPokedex() => _pokedex = PokedexEditor.Open(_sav);
+
+    public void SavePokedex()
+    {
+        Pokedex.Save();
+        _pokedex = null;
+    }
+
+    public void CancelPokedex()
+    {
+        _pokedex?.Discard();
+        _pokedex = null;
+    }
+
+    public string PokedexDocument()
+    {
+        OpenPokedex();
+        return Pokedex.ToJson();
+    }
+
+    public string PokedexModify(string action, string json)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(action);
+        Pokedex.ApplyJson(json);
+        Pokedex.Bulk(action);
+        return Pokedex.ToJson();
+    }
+
+    public void SavePokedexDocument(string json)
+    {
+        Pokedex.ApplyJson(json);
+        SavePokedex();
     }
 
     public byte[] Export() => Export([]);

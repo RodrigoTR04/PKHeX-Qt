@@ -3,6 +3,7 @@
 #include "AboutWindow.h"
 #include "EditorBridge.h"
 #include "InventoryWindow.h"
+#include "PokedexWindow.h"
 #include "LangCatalog.h"
 #include "PkmTabChrome.h"
 #include "QrWindow.h"
@@ -275,6 +276,8 @@ void MainWindow::fillSavChrome()
     fillSavToolButtons(findChild<QWidget *>(QStringLiteral("FLP_SAVtools")));
     if (auto *items = findChild<QPushButton *>(QStringLiteral("B_OpenItemPouch")))
         connect(items, &QPushButton::clicked, this, &MainWindow::onOpenInventory);
+    if (auto *dex = findChild<QPushButton *>(QStringLiteral("B_OpenPokedex")))
+        connect(dex, &QPushButton::clicked, this, &MainWindow::onOpenPokedex);
 }
 
 void MainWindow::onOpenInventory()
@@ -288,6 +291,23 @@ void MainWindow::onOpenInventory()
     });
     if (dialog.exec() == QDialog::Accepted)
         _editor.saveInventory(dialog.document());
+}
+
+void MainWindow::onOpenPokedex()
+{
+    if (!_editor.hasSession() || !_editor.hasPokedex())
+        return;
+    PokedexWindow dialog(this);
+    dialog.loadDocument(_editor.pokedexDocument());
+    connect(&dialog, &PokedexWindow::modifyRequested, this, [&](const QString &action) {
+        const QString next = _editor.pokedexModify(action, dialog.document());
+        if (!next.isEmpty())
+            dialog.loadDocument(next);
+    });
+    if (dialog.exec() == QDialog::Accepted)
+        _editor.savePokedex(dialog.document());
+    else
+        _editor.cancelPokedex();
 }
 
 void MainWindow::fillSlotChrome()

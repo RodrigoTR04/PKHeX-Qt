@@ -57,6 +57,11 @@ public:
     QString inventoryDocument() override;
     QString inventoryModify(const QString &action, const QString &json) override;
     bool saveInventory(const QString &json) override;
+    bool hasPokedex() const override;
+    QString pokedexDocument() override;
+    QString pokedexModify(const QString &action, const QString &json) override;
+    bool savePokedex(const QString &json) override;
+    bool cancelPokedex() override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -119,4 +124,9 @@ private:
     component_entry_point_fn _prepareInventory{};
     component_entry_point_fn _inventoryModify{};
     component_entry_point_fn _saveInventory{};
+    component_entry_point_fn _hasPokedex{};
+    component_entry_point_fn _preparePokedex{};
+    component_entry_point_fn _pokedexModify{};
+    component_entry_point_fn _savePokedex{};
+    component_entry_point_fn _cancelPokedex{};
 };

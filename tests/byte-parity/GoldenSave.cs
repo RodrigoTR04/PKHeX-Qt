@@ -20,4 +20,6 @@ internal static class GoldenSave
     /// tests keep the live <see cref="SaveFile"/> like the Editor does after New.
     /// </summary>
     public static SaveFile Gen9Blank() => BlankSaveFile.Get(GameVersion.SL);
+
+    public static SaveFile Gen7Blank() => BlankSaveFile.Get(GameVersion.SN);
 }

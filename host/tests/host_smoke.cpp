@@ -3,6 +3,7 @@
 #include "EditorBridge.h"
 #include "ErrorWindow.h"
 #include "InventoryWindow.h"
+#include "PokedexWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
 
@@ -298,6 +299,34 @@ public:
         lastInventorySave = json;
         return true;
     }
+
+    bool hasPokedex() const override
+    {
+        return true;
+    }
+
+    QString pokedexDocument() override
+    {
+        return QStringLiteral(
+            "{\"langForm\":\"SAV_Pokedex5\",\"maxSpecies\":2,\"languageCount\":7,"
+            "\"hasNationalDex\":true,\"hasSpinda\":true,\"species\":1,\"caught\":false,"
+            "\"speciesNames\":[\"001 - Bulbasaur\",\"002 - Ivysaur\"]}");
+    }
+
+    QString pokedexModify(const QString &, const QString &json) override
+    {
+        return json;
+    }
+
+    bool savePokedex(const QString &) override
+    {
+        return true;
+    }
+
+    bool cancelPokedex() override
+    {
+        return true;
+    }
 };
 
 int main(int argc, char *argv[])
@@ -586,6 +615,32 @@ int main(int argc, char *argv[])
     {
         std::cerr << "inventory title was " << inventoryDialog.windowTitle().toStdString() << "\n";
         return 47;
+    }
+
+    PokedexWindow pokedexDialog(&window);
+    pokedexDialog.loadDocument(editor.pokedexDocument());
+    const QStringList dexNames{
+        QStringLiteral("B_Save"),
+        QStringLiteral("B_Cancel"),
+        QStringLiteral("LB_Species"),
+        QStringLiteral("CB_Species"),
+        QStringLiteral("CHK_P1"),
+        QStringLiteral("B_Modify"),
+        QStringLiteral("mnuSeenNone"),
+    };
+    for (const auto &name : dexNames)
+    {
+        if (pokedexDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "pokedex missing " << name.toStdString()
+                      << " title=" << pokedexDialog.windowTitle().toStdString() << "\n";
+            return 48;
+        }
+    }
+    if (pokedexDialog.windowTitle() != QStringLiteral("Pokédex Editor"))
+    {
+        std::cerr << "pokedex title was " << pokedexDialog.windowTitle().toStdString() << "\n";
+        return 48;
     }
 
     return 0;

@@ -182,6 +182,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PrepareInventory", &_prepareInventory);
     load("InventoryModify", &_inventoryModify);
     load("SaveInventory", &_saveInventory);
+    load("HasPokedex", &_hasPokedex);
+    load("PreparePokedex", &_preparePokedex);
+    load("PokedexModify", &_pokedexModify);
+    load("SavePokedex", &_savePokedex);
+    load("CancelPokedex", &_cancelPokedex);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -505,6 +510,35 @@ QString DotNetEditorBridge::inventoryModify(const QString &action, const QString
 bool DotNetEditorBridge::saveInventory(const QString &json)
 {
     return call(_saveInventory, json);
+}
+
+bool DotNetEditorBridge::hasPokedex() const
+{
+    if (_hasPokedex == nullptr)
+        return false;
+    return _hasPokedex(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::pokedexDocument()
+{
+    return readText(_preparePokedex, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::pokedexModify(const QString &action, const QString &json)
+{
+    return readText(_pokedexModify, action + QLatin1Char('\n') + json);
+}
+
+bool DotNetEditorBridge::savePokedex(const QString &json)
+{
+    return call(_savePokedex, json);
+}
+
+bool DotNetEditorBridge::cancelPokedex()
+{
+    if (_cancelPokedex == nullptr)
+        return false;
+    return _cancelPokedex(nullptr, 0) == 0;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const
