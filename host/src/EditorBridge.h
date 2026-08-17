@@ -38,6 +38,11 @@ public:
     virtual bool importEntity(const QByteArray &data) = 0;
     virtual QString slotPreview(const QString &key) = 0;
     virtual QString slotCryPath(const QString &key) = 0;
+    virtual bool qrHasBoxSlotCopies() const = 0;
+    virtual QString exportQrMessage(int box, int slot, int copies) = 0;
+    virtual QByteArray exportQrPng(int box, int slot, int copies) = 0;
+    virtual bool importQrMessage(const QString &message) = 0;
+    virtual bool importQrPng(const QByteArray &png) = 0;
     virtual bool writeCurrentToSlot(const QString &key) = 0;
     virtual bool deleteSlot(const QString &key) = 0;
     virtual bool swapSlots(const QString &source, const QString &destination) = 0;

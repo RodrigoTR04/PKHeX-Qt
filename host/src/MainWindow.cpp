@@ -3,12 +3,15 @@
 #include "EditorBridge.h"
 #include "LangCatalog.h"
 #include "PkmTabChrome.h"
+#include "QrWindow.h"
 #include "SavToolChrome.h"
 #include "SlotChrome.h"
 #include "ui_MainWindow.h"
 
 #include <QAbstractSpinBox>
+#include <QAction>
 #include <QApplication>
+#include <QBuffer>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QCloseEvent>
@@ -24,10 +27,14 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QGuiApplication>
+#include <QIODevice>
+#include <QImage>
+#include <QImage>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -36,7 +43,7 @@
 #include <QSoundEffect>
 #include <QSpinBox>
 #include <QUrl>
-#include <QUrl>
+#include <QVariant>
 #include <QWidget>
 
 MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
@@ -49,6 +56,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     fillSavChrome();
     fillSlotChrome();
     fillPkmChrome();
+    bindPkmContextMenu();
     applyEnglishStrings();
     applyInGameFont(this);
     setWindowTitle(QStringLiteral("PKHeX Qt"));
@@ -193,6 +201,8 @@ void MainWindow::updateExportEnabled()
     _ui->Menu_ShowdownExportPKM->setEnabled(open);
     _ui->Menu_ShowdownExportParty->setEnabled(open);
     _ui->Menu_ShowdownExportCurrentBox->setEnabled(open);
+    if (auto *qr = findChild<QAction *>(QStringLiteral("mnuLQR")))
+        qr->setEnabled(open);
 }
 
 void MainWindow::onMenuExit()
@@ -459,6 +469,31 @@ void MainWindow::fillPkmChrome()
     }
 }
 
+void MainWindow::bindPkmContextMenu()
+{
+    auto *mnuL = new QMenu(this);
+    mnuL->setObjectName(QStringLiteral("mnuL"));
+    auto *legality = new QAction(QStringLiteral("Legality"), this);
+    legality->setObjectName(QStringLiteral("mnuLLegality"));
+    auto *qr = new QAction(QStringLiteral("QR!"), this);
+    qr->setObjectName(QStringLiteral("mnuLQR"));
+    auto *saveAs = new QAction(QStringLiteral("Save as..."), this);
+    saveAs->setObjectName(QStringLiteral("mnuLSave"));
+    mnuL->addAction(legality);
+    mnuL->addAction(qr);
+    mnuL->addAction(saveAs);
+    connect(legality, &QAction::triggered, this, &MainWindow::onLegalityClicked);
+    connect(qr, &QAction::triggered, this, &MainWindow::clickQr);
+    connect(saveAs, &QAction::triggered, this, &MainWindow::onMenuSavePkm);
+    if (auto *dragout = findChild<QLabel *>(QStringLiteral("dragout")))
+    {
+        dragout->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(dragout, &QLabel::customContextMenuRequested, this, [dragout, mnuL](const QPoint &pos) {
+            mnuL->exec(dragout->mapToGlobal(pos));
+        });
+    }
+}
+
 void MainWindow::bindPkmFields()
 {
     for (const char *name : kEditFields)
@@ -697,6 +732,85 @@ void MainWindow::copyShowdown(const QString &scope, const QString &success)
         QMessageBox::information(this, windowTitle(), success);
 }
 
+void MainWindow::clickQr()
+{
+    if (!_editor.hasSession())
+        return;
+    if (QApplication::keyboardModifiers() & Qt::AltModifier)
+    {
+        importQrFromClipboard();
+        return;
+    }
+    exportQrWindow();
+}
+
+void MainWindow::importQrFromClipboard()
+{
+    auto *clip = QGuiApplication::clipboard();
+    if (clip == nullptr)
+        return;
+    const QString url = clip->text();
+    if (!url.trimmed().isEmpty())
+    {
+        if (url.startsWith(QLatin1String("http")) && !url.contains(QLatin1Char('\n')))
+        {
+            if (!_editor.importQrMessage(url))
+            {
+                QMessageBox::warning(this, windowTitle(), tr("Decoded data not a valid PKM/Gift."));
+                return;
+            }
+            refreshPkmEditor();
+            refreshStorage();
+            return;
+        }
+        onShowdownImport();
+        return;
+    }
+    const auto *mime = clip->mimeData();
+    if (mime == nullptr || !mime->hasImage())
+        return;
+    const QImage image = qvariant_cast<QImage>(mime->imageData());
+    if (image.isNull())
+        return;
+    QByteArray png;
+    QBuffer buffer(&png);
+    if (!buffer.open(QIODevice::WriteOnly) || !image.save(&buffer, "PNG"))
+    {
+        QMessageBox::warning(this, windowTitle(), tr("Reader could not find QR data in the image."));
+        return;
+    }
+    if (!_editor.importQrPng(png))
+    {
+        QMessageBox::warning(this, windowTitle(), tr("Decoded data not a valid PKM/Gift."));
+        return;
+    }
+    refreshPkmEditor();
+    refreshStorage();
+}
+
+void MainWindow::exportQrWindow()
+{
+    const QString message = _editor.exportQrMessage(0, 0, 1);
+    if (message.startsWith(QLatin1String("http://lunarcookies.github.io/b1s1.html#")) && !_qr6Notified)
+    {
+        QMessageBox::information(
+            this,
+            windowTitle(),
+            tr("QR codes are deprecated in favor of other methods.\n\n"
+               "Consider utilizing homebrew or on-the-fly RAM editing custom firmware (PKMN-NTR)."));
+        _qr6Notified = true;
+    }
+
+    QrWindow dialog(this);
+    dialog.setBoxSlotCopiesVisible(_editor.qrHasBoxSlotCopies());
+    const auto reload = [this, &dialog] {
+        dialog.setImage(_editor.exportQrPng(dialog.box(), dialog.slot(), dialog.copies()));
+    };
+    connect(&dialog, &QrWindow::refreshRequested, this, reload);
+    reload();
+    dialog.exec();
+}
+
 void MainWindow::copyEntityToClipboard()
 {
     if (!_editor.hasSession())
@@ -827,7 +941,15 @@ bool MainWindow::handleSlotMouse(QObject *watched, QEvent *event)
         _pressKey = dragout ? QString() : key;
         _dragging = false;
         if (dragout)
+        {
+            const auto mods = mouse->modifiers();
+            if ((mods & Qt::AltModifier) || (mods & Qt::ShiftModifier))
+            {
+                clickQr();
+                return true;
+            }
             return false;
+        }
         const auto mods = mouse->modifiers();
         if (mods & Qt::AltModifier)
         {

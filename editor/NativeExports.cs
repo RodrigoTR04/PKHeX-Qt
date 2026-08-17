@@ -495,6 +495,80 @@ public static class NativeExports
         }
     }
 
+    public static int QrHasBoxSlotCopies(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().QrHasBoxSlotCopies ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PrepareQrMessage(IntPtr arg, int size)
+    {
+        try
+        {
+            ParseQrPlacement(ReadUtf8AllowEmpty(arg, size), out var box, out var slot, out var copies);
+            _preparedText = RequireSession().ExportQrMessage(box, slot, copies);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int PrepareQrPng(IntPtr arg, int size)
+    {
+        try
+        {
+            ParseQrPlacement(ReadUtf8AllowEmpty(arg, size), out var box, out var slot, out var copies);
+            _preparedPng = RequireSession().ExportQrPng(box, slot, copies);
+            return _preparedPng.Length;
+        }
+        catch
+        {
+            _preparedPng = null;
+            return -1;
+        }
+    }
+
+    public static int ImportQrMessage(IntPtr arg, int size)
+    {
+        try
+        {
+            RequireSession().ImportQrMessage(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int ImportQrPng(IntPtr arg, int size)
+    {
+        try
+        {
+            if (arg == IntPtr.Zero || size <= 0)
+                return 1;
+            var data = new byte[size];
+            Marshal.Copy(arg, data, 0, size);
+            RequireSession().ImportQrPng(data);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     public static int WriteCurrentToSlot(IntPtr arg, int size)
     {
         try
@@ -597,6 +671,23 @@ public static class NativeExports
         }
 
         throw new FormatException("Slot key was not box:box:slot or party:slot.");
+    }
+
+    private static void ParseQrPlacement(string spec, out int box, out int slot, out int copies)
+    {
+        box = 0;
+        slot = 0;
+        copies = 1;
+        if (string.IsNullOrWhiteSpace(spec))
+            return;
+        var parts = spec.Split(',');
+        if (parts.Length < 3)
+            return;
+        _ = int.TryParse(parts[0], out box);
+        _ = int.TryParse(parts[1], out slot);
+        _ = int.TryParse(parts[2], out copies);
+        if (copies < 1)
+            copies = 1;
     }
 
     private static string ReadUtf8AllowEmpty(IntPtr arg, int size)

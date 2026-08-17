@@ -2,6 +2,7 @@
 #include "MainWindow.h"
 
 #include <QAction>
+#include <QAction>
 #include <QApplication>
 #include <QByteArray>
 #include <QClipboard>
@@ -13,6 +14,7 @@
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPushButton>
@@ -148,6 +150,31 @@ public:
     {
         lastCry = key;
         return {};
+    }
+
+    bool qrHasBoxSlotCopies() const override
+    {
+        return false;
+    }
+
+    QString exportQrMessage(int, int, int) override
+    {
+        return QStringLiteral("null/#qr");
+    }
+
+    QByteArray exportQrPng(int, int, int) override
+    {
+        return QByteArray::fromHex("89504e470d0a1a0a");
+    }
+
+    bool importQrMessage(const QString &) override
+    {
+        return true;
+    }
+
+    bool importQrPng(const QByteArray &) override
+    {
+        return true;
     }
 
     bool writeCurrentToSlot(const QString &key) override
@@ -382,6 +409,17 @@ int main(int argc, char *argv[])
         return 24;
     if (!importSet->isEnabled())
         return 25;
+
+    auto *mnuLqr = window.findChild<QAction *>(QStringLiteral("mnuLQR"));
+    if (mnuLqr == nullptr || !mnuLqr->text().contains(QLatin1String("QR!")))
+    {
+        std::cerr << "mnuLQR missing text=" << (mnuLqr ? mnuLqr->text().toStdString() : "null") << "\n";
+        return 34;
+    }
+    if (window.findChild<QMenu *>(QStringLiteral("mnuL")) == nullptr)
+        return 35;
+    if (!mnuLqr->isEnabled())
+        return 36;
 
     window.setFocus(Qt::OtherFocusReason);
     QKeyEvent copyKey(QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier);

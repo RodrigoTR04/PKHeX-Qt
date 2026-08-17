@@ -53,6 +53,11 @@ std::string toFs(const QString &path)
 {
     return QDir::toNativeSeparators(path).toStdString();
 }
+
+QString qrPlacement(int box, int slot, int copies)
+{
+    return QStringLiteral("%1,%2,%3").arg(box).arg(slot).arg(copies);
+}
 }
 
 DotNetEditorBridge::DotNetEditorBridge()
@@ -130,6 +135,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("ImportEntity", &_importEntity);
     load("SlotPreview", &_slotPreview);
     load("SlotCryPath", &_slotCryPath);
+    load("QrHasBoxSlotCopies", &_qrHasBoxSlotCopies);
+    load("PrepareQrMessage", &_prepareQrMessage);
+    load("PrepareQrPng", &_prepareQrPng);
+    load("ImportQrMessage", &_importQrMessage);
+    load("ImportQrPng", &_importQrPng);
     load("WriteCurrentToSlot", &_writeCurrentToSlot);
     load("DeleteSlot", &_deleteSlot);
     load("SwapSlots", &_swapSlots);
@@ -277,9 +287,15 @@ QString DotNetEditorBridge::exportShowdown(const QString &scope)
 
 QByteArray DotNetEditorBridge::readBinary(component_entry_point_fn prepare) const
 {
+    return readBinary(prepare, QString());
+}
+
+QByteArray DotNetEditorBridge::readBinary(component_entry_point_fn prepare, const QString &key) const
+{
     if (prepare == nullptr || _copyPreparedPng == nullptr)
         return {};
-    const int length = prepare(nullptr, 0);
+    QByteArray utf8 = key.toUtf8();
+    const int length = prepare(utf8.isEmpty() ? nullptr : utf8.data(), utf8.size());
     if (length <= 0)
         return {};
     QByteArray data(length, '\0');
@@ -313,6 +329,35 @@ QString DotNetEditorBridge::slotPreview(const QString &key)
 QString DotNetEditorBridge::slotCryPath(const QString &key)
 {
     return readText(_slotCryPath, key);
+}
+
+bool DotNetEditorBridge::qrHasBoxSlotCopies() const
+{
+    if (_qrHasBoxSlotCopies == nullptr)
+        return false;
+    return _qrHasBoxSlotCopies(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::exportQrMessage(int box, int slot, int copies)
+{
+    return readText(_prepareQrMessage, qrPlacement(box, slot, copies));
+}
+
+QByteArray DotNetEditorBridge::exportQrPng(int box, int slot, int copies)
+{
+    return readBinary(_prepareQrPng, qrPlacement(box, slot, copies));
+}
+
+bool DotNetEditorBridge::importQrMessage(const QString &message)
+{
+    return call(_importQrMessage, message);
+}
+
+bool DotNetEditorBridge::importQrPng(const QByteArray &png)
+{
+    if (_importQrPng == nullptr || png.isEmpty())
+        return false;
+    return _importQrPng(const_cast<void *>(static_cast<const void *>(png.constData())), png.size()) == 0;
 }
 
 bool DotNetEditorBridge::writeCurrentToSlot(const QString &key)

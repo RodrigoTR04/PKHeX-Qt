@@ -32,6 +32,11 @@ public:
     bool importEntity(const QByteArray &data) override;
     QString slotPreview(const QString &key) override;
     QString slotCryPath(const QString &key) override;
+    bool qrHasBoxSlotCopies() const override;
+    QString exportQrMessage(int box, int slot, int copies) override;
+    QByteArray exportQrPng(int box, int slot, int copies) override;
+    bool importQrMessage(const QString &message) override;
+    bool importQrPng(const QByteArray &png) override;
     bool writeCurrentToSlot(const QString &key) override;
     bool deleteSlot(const QString &key) override;
     bool swapSlots(const QString &source, const QString &destination) override;
@@ -58,6 +63,7 @@ private:
     QString readText(component_entry_point_fn prepare, const QString &key) const;
 
     QByteArray readBinary(component_entry_point_fn prepare) const;
+    QByteArray readBinary(component_entry_point_fn prepare, const QString &key) const;
 
     void *_hostfxr{};
     void *_context{};
@@ -85,6 +91,11 @@ private:
     component_entry_point_fn _importEntity{};
     component_entry_point_fn _slotPreview{};
     component_entry_point_fn _slotCryPath{};
+    component_entry_point_fn _qrHasBoxSlotCopies{};
+    component_entry_point_fn _prepareQrMessage{};
+    component_entry_point_fn _prepareQrPng{};
+    component_entry_point_fn _importQrMessage{};
+    component_entry_point_fn _importQrPng{};
     component_entry_point_fn _writeCurrentToSlot{};
     component_entry_point_fn _deleteSlot{};
     component_entry_point_fn _swapSlots{};

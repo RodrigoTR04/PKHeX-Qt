@@ -57,6 +57,9 @@ private slots:
     void onShowdownExportPkm();
     void onShowdownExportParty();
     void onShowdownExportBox();
+    void clickQr();
+    void importQrFromClipboard();
+    void exportQrWindow();
 
 private:
     void updateExportEnabled();
@@ -65,6 +68,7 @@ private:
     void fillSlotChrome();
     void fillPkmChrome();
     void bindPkmFields();
+    void bindPkmContextMenu();
     void refreshStorage();
     void refreshBoxSelector(const StorageLayout &layout);
     void refreshBoxSlots(const StorageLayout &layout);
@@ -96,4 +100,5 @@ private:
     QString _pressKey;
     bool _dragging = false;
     std::unique_ptr<QSoundEffect> _cry;
+    bool _qr6Notified = false;
 };

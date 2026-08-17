@@ -312,6 +312,56 @@ public sealed class EditorSession
         return ShowdownParsing.GetLocalizedPreviewText(pk, BattleTemplateExportSettings.Showdown);
     }
 
+    public bool QrHasBoxSlotCopies => RequireCurrent() is PK7;
+
+    public string ExportQrMessage(int box = 0, int slot = 0, int copies = 1)
+    {
+        var pk = RequireCurrent();
+        pk.RefreshChecksum();
+        return QrCodec.Message(pk, box, slot, copies);
+    }
+
+    public byte[] ExportQrPng(int box = 0, int slot = 0, int copies = 1)
+        => QrCodec.EncodePng(ExportQrMessage(box, slot, copies));
+
+    public void ImportQrMessage(string message)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(message);
+        if (TryPayloadBytes(message, out var payload))
+        {
+            ImportConverted(ImportQrPayload(payload));
+            return;
+        }
+
+        var pk = QRMessageUtil.GetPKM(message, _sav.Context)
+            ?? throw new InvalidDataException("Decoded data not a valid PKM/Gift.");
+        ImportConverted(pk);
+    }
+
+    private static bool TryPayloadBytes(string message, out byte[] payload)
+    {
+        payload = [];
+        if (!message.StartsWith("null/#", StringComparison.Ordinal) && !message.StartsWith("http", StringComparison.Ordinal))
+            return false;
+        var hash = message.IndexOf('#');
+        if (hash < 0 || hash == message.Length - 1)
+            return false;
+        payload = Convert.FromBase64String(message[(hash + 1)..]);
+        return payload.Length > 0;
+    }
+
+    private PKM ImportQrPayload(byte[] payload)
+    {
+        if (payload.Length == _sav.SIZE_STORED)
+            return _sav.GetStoredSlot(payload);
+        if (payload.Length == _sav.SIZE_PARTY)
+            return _sav.GetPartySlot(payload);
+        return ConvertIncoming(payload, $".{RequireCurrent().Extension}");
+    }
+
+    public void ImportQrPng(ReadOnlyMemory<byte> png)
+        => ImportQrMessage(QrCodec.DecodePng(png));
+
     public string SlotCryPath(string cryFolder, bool party, int box, int slot)
     {
         var pk = ReadSlot(party, box, slot);
