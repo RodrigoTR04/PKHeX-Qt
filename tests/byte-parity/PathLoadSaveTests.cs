@@ -13,7 +13,7 @@ public sealed class PathLoadSaveTests
         var fixture = GoldenSave.Gen5BlankExport();
         File.WriteAllBytes(path, fixture);
 
-        var app = new EditorApp();
+        var app = new EditorApp(new UserConfig { Root = dir.Path });
         app.OpenFromPath(path);
 
         Assert.NotNull(app.Session);
@@ -28,7 +28,7 @@ public sealed class PathLoadSaveTests
         var output = Path.Combine(dir.Path, "exported.sav");
         File.WriteAllBytes(input, GoldenSave.Gen5BlankExport());
 
-        var app = new EditorApp();
+        var app = new EditorApp(new UserConfig { Root = dir.Path });
         app.OpenFromPath(input);
         var expected = app.Session!.Export();
 

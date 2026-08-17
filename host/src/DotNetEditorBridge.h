@@ -35,6 +35,14 @@ public:
     bool deleteSlot(const QString &key) override;
     bool swapSlots(const QString &source, const QString &destination) override;
     bool dropOnSlot(const QString &key, const QByteArray &data) override;
+    bool needsClosePrompt() const override;
+    bool needsOpenPrompt() const override;
+    bool needsExportPrompt() const override;
+    bool pathIsSave(const QString &path) override;
+    bool saveUserConfig() override;
+    bool exportBackup(const QString &path) override;
+    bool saveEntityPath(const QString &path) override;
+    QString suggestedBackupName() override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -74,4 +82,12 @@ private:
     component_entry_point_fn _deleteSlot{};
     component_entry_point_fn _swapSlots{};
     component_entry_point_fn _dropOnSlot{};
+    component_entry_point_fn _needsClosePrompt{};
+    component_entry_point_fn _needsOpenPrompt{};
+    component_entry_point_fn _needsExportPrompt{};
+    component_entry_point_fn _pathIsSave{};
+    component_entry_point_fn _saveUserConfig{};
+    component_entry_point_fn _exportBackup{};
+    component_entry_point_fn _saveEntityPath{};
+    component_entry_point_fn _prepareBackupName{};
 };

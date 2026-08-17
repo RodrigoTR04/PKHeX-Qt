@@ -132,6 +132,14 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("DeleteSlot", &_deleteSlot);
     load("SwapSlots", &_swapSlots);
     load("DropOnSlot", &_dropOnSlot);
+    load("NeedsClosePrompt", &_needsClosePrompt);
+    load("NeedsOpenPrompt", &_needsOpenPrompt);
+    load("NeedsExportPrompt", &_needsExportPrompt);
+    load("PathIsSave", &_pathIsSave);
+    load("SaveUserConfig", &_saveUserConfig);
+    load("ExportBackup", &_exportBackup);
+    load("SaveEntityPath", &_saveEntityPath);
+    load("PrepareBackupName", &_prepareBackupName);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -318,6 +326,57 @@ bool DotNetEditorBridge::dropOnSlot(const QString &key, const QByteArray &data)
     payload.append('\0');
     payload.append(data);
     return _dropOnSlot(payload.data(), payload.size()) == 0;
+}
+
+bool DotNetEditorBridge::needsClosePrompt() const
+{
+    if (_needsClosePrompt == nullptr)
+        return false;
+    return _needsClosePrompt(nullptr, 0) == 1;
+}
+
+bool DotNetEditorBridge::needsOpenPrompt() const
+{
+    if (_needsOpenPrompt == nullptr)
+        return false;
+    return _needsOpenPrompt(nullptr, 0) == 1;
+}
+
+bool DotNetEditorBridge::needsExportPrompt() const
+{
+    if (_needsExportPrompt == nullptr)
+        return false;
+    return _needsExportPrompt(nullptr, 0) == 1;
+}
+
+bool DotNetEditorBridge::pathIsSave(const QString &path)
+{
+    if (_pathIsSave == nullptr)
+        return false;
+    QByteArray utf8 = path.toUtf8();
+    return _pathIsSave(utf8.data(), utf8.size()) == 1;
+}
+
+bool DotNetEditorBridge::saveUserConfig()
+{
+    if (_saveUserConfig == nullptr)
+        return false;
+    return _saveUserConfig(nullptr, 0) == 0;
+}
+
+bool DotNetEditorBridge::exportBackup(const QString &path)
+{
+    return call(_exportBackup, path);
+}
+
+bool DotNetEditorBridge::saveEntityPath(const QString &path)
+{
+    return call(_saveEntityPath, path);
+}
+
+QString DotNetEditorBridge::suggestedBackupName()
+{
+    return readText(_prepareBackupName, QStringLiteral("-"));
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

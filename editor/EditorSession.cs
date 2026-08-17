@@ -25,13 +25,28 @@ public sealed class EditorSession
     private bool _partyOrigin;
     private int _originBox;
     private int _originSlot;
+    private byte[] _cleanEntity = [];
 
     private readonly ArtworkSpriteComposer _sprites = new();
 
     private EditorSession(SaveFile sav)
     {
         _sav = sav;
+        _sav.State.Edited = false;
     }
+
+    public bool SaveEdited => _sav.State.Edited;
+    public bool IsExportable => _sav.State.Exportable;
+    public string? LoadedPath => string.IsNullOrEmpty(_sav.Metadata.FilePath) ? null : _sav.Metadata.FilePath;
+    public string SuggestedBackupName => PathUtil.CleanFileName(_sav.Metadata.BAKName);
+
+    public bool EntityUnsaved =>
+        _cleanEntity.AsSpan().ContainsAnyExcept((byte)0)
+        && !CurrentEntity.AsSpan().SequenceEqual(_cleanEntity);
+
+    public bool NeedsClosePrompt => SaveEdited || EntityUnsaved;
+    public bool NeedsOpenPrompt => SaveEdited;
+    public bool NeedsExportPrompt(bool checkUnsavedEntity) => checkUnsavedEntity && EntityUnsaved;
 
     public static EditorSession Load(ReadOnlyMemory<byte> save)
     {
@@ -44,9 +59,8 @@ public sealed class EditorSession
     public static EditorSession OpenDropped(EditorSession? current, string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
-        var bytes = File.ReadAllBytes(path);
-        if (SaveUtil.TryGetSaveFile(bytes, out _))
-            return Load(bytes);
+        if (SaveUtil.TryGetSaveFile(path, out var sav))
+            return new EditorSession(sav);
         if (current is null)
             throw new InvalidDataException("Unrecognized save file.");
         current.ImportEntityFromPath(path);
@@ -120,7 +134,42 @@ public sealed class EditorSession
             _sav.SetPartySlotAtIndex(pk, _originSlot);
         else
             _sav.SetBoxSlotAtIndex(pk, _originBox, _originSlot);
-        CurrentEntity = pk.Data.ToArray();
+        _sav.State.Edited = true;
+        MarkEntityClean();
+    }
+
+    public void MarkClean()
+    {
+        _sav.State.Edited = false;
+        if (_current is not null)
+            MarkEntityClean();
+    }
+
+    public void SetLoadedPath(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        _sav.Metadata.SetExtraInfo(path);
+    }
+
+    public string BackupFileName(string destDir)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(destDir);
+        return _sav.Metadata.GetBackupFileName(destDir);
+    }
+
+    public bool TryCopyOpenBackup(string destDir)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(destDir);
+        if (!_sav.State.Exportable)
+            return false;
+        var dest = _sav.Metadata.GetBackupFileName(destDir);
+        if (File.Exists(dest))
+            return false;
+        var src = _sav.Metadata.FilePath;
+        if (string.IsNullOrEmpty(src) || !File.Exists(src))
+            return false;
+        File.Copy(src, dest, overwrite: true);
+        return true;
     }
 
     public bool LegalityValid
@@ -144,7 +193,13 @@ public sealed class EditorSession
         _partyOrigin = party;
         _originBox = box;
         _originSlot = slot;
-        CurrentEntity = pk.Data.ToArray();
+        MarkEntityClean();
+    }
+
+    private void MarkEntityClean()
+    {
+        CurrentEntity = RequireCurrent().Data.ToArray();
+        _cleanEntity = CurrentEntity.ToArray();
     }
 
     private PKM RequireCurrent()
@@ -214,7 +269,10 @@ public sealed class EditorSession
         => WriteToSlot(ConvertIncoming(data, extension), party, box, slot);
 
     public void WriteCurrentToSlot(bool party, int box, int slot)
-        => WriteToSlot(RequireCurrent().Clone(), party, box, slot);
+    {
+        WriteToSlot(RequireCurrent().Clone(), party, box, slot);
+        MarkEntityClean();
+    }
 
     public void DeleteSlot(bool party, int box, int slot)
         => WriteToSlot(_sav.BlankPKM, party, box, slot);
@@ -254,6 +312,7 @@ public sealed class EditorSession
             _sav.SetPartySlotAtIndex(pk, slot);
         else
             _sav.SetBoxSlotAtIndex(pk, box, slot);
+        _sav.State.Edited = true;
     }
 
     private PKM ConvertIncoming(ReadOnlyMemory<byte> data, string extension)

@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QClipboard>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDate>
@@ -53,6 +54,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     connect(_ui->Menu_Open, &QAction::triggered, this, &MainWindow::onMenuOpen);
     connect(_ui->Menu_ExportSAV, &QAction::triggered, this, &MainWindow::onMenuExportSav);
     connect(_ui->Menu_Save, &QAction::triggered, this, &MainWindow::onMenuSavePkm);
+    connect(_ui->Menu_ExportBAK, &QPushButton::clicked, this, &MainWindow::onMenuExportBak);
     connect(_ui->Menu_Exit, &QAction::triggered, this, &MainWindow::onMenuExit);
     connect(_ui->Menu_ShowdownImportPKM, &QAction::triggered, this, &MainWindow::onShowdownImport);
     connect(_ui->Menu_ShowdownExportPKM, &QAction::triggered, this, &MainWindow::onShowdownExportPkm);
@@ -65,6 +67,8 @@ MainWindow::~MainWindow() = default;
 
 bool MainWindow::openPath(const QString &path)
 {
+    if (_editor.pathIsSave(path) && !confirmOpenSave())
+        return false;
     const bool ok = _editor.openPath(path);
     if (!ok)
         QMessageBox::warning(this, windowTitle(), tr("Could not open that save."));
@@ -82,6 +86,8 @@ bool MainWindow::openPath(const QString &path)
 
 bool MainWindow::savePath(const QString &path)
 {
+    if (!confirmExportSave())
+        return false;
     const bool ok = _editor.savePath(path);
     if (!ok)
         QMessageBox::warning(this, windowTitle(), tr("Could not export that save."));
@@ -129,9 +135,23 @@ void MainWindow::onMenuSavePkm()
         tr("All Files (*)"));
     if (path.isEmpty())
         return;
-    QFile file(path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate) || file.write(data) != data.size())
+    if (!_editor.saveEntityPath(path))
         QMessageBox::warning(this, windowTitle(), tr("Could not export that Pokémon."));
+}
+
+void MainWindow::onMenuExportBak()
+{
+    if (!_editor.hasSession())
+        return;
+    const QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Export Backup"),
+        _editor.suggestedBackupName(),
+        tr("All Files (*)"));
+    if (path.isEmpty())
+        return;
+    if (!_editor.exportBackup(path))
+        QMessageBox::warning(this, windowTitle(), tr("Original file has been moved; unable to copy a backup."));
 }
 
 void MainWindow::updateExportEnabled()
@@ -147,6 +167,56 @@ void MainWindow::updateExportEnabled()
 void MainWindow::onMenuExit()
 {
     close();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (!confirmClose())
+    {
+        event->ignore();
+        return;
+    }
+    _editor.saveUserConfig();
+    event->accept();
+}
+
+bool MainWindow::confirmYesNo(const QString &text, const QString &informative)
+{
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(windowTitle());
+    box.setText(text);
+    box.setInformativeText(informative);
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::Yes);
+    return box.exec() == QMessageBox::Yes;
+}
+
+bool MainWindow::confirmOpenSave()
+{
+    if (!_editor.needsOpenPrompt())
+        return true;
+    return confirmYesNo(
+        QStringLiteral("Any unsaved changes will be lost."),
+        QStringLiteral("Are you sure you want to load a new save file?"));
+}
+
+bool MainWindow::confirmExportSave()
+{
+    if (!_editor.needsExportPrompt())
+        return true;
+    return confirmYesNo(
+        QStringLiteral("The Pokémon in the editor has unsaved changes."),
+        QStringLiteral("Continue?"));
+}
+
+bool MainWindow::confirmClose()
+{
+    if (!_editor.needsClosePrompt())
+        return true;
+    return confirmYesNo(
+        QStringLiteral("Any unsaved changes will be lost."),
+        QStringLiteral("Are you sure you want to close PKHeX?"));
 }
 
 void MainWindow::fillSavChrome()

@@ -166,6 +166,46 @@ public:
         lastDrop = key;
         return true;
     }
+
+    bool needsClosePrompt() const override
+    {
+        return false;
+    }
+
+    bool needsOpenPrompt() const override
+    {
+        return false;
+    }
+
+    bool needsExportPrompt() const override
+    {
+        return false;
+    }
+
+    bool pathIsSave(const QString &) override
+    {
+        return true;
+    }
+
+    bool saveUserConfig() override
+    {
+        return true;
+    }
+
+    bool exportBackup(const QString &) override
+    {
+        return true;
+    }
+
+    bool saveEntityPath(const QString &) override
+    {
+        return true;
+    }
+
+    QString suggestedBackupName() override
+    {
+        return QStringLiteral("named.sav.bak");
+    }
 };
 
 int main(int argc, char *argv[])
@@ -361,6 +401,9 @@ int main(int argc, char *argv[])
     auto *savePkm = window.findChild<QAction *>(QStringLiteral("Menu_Save"));
     if (savePkm == nullptr || savePkm->shortcut() != QKeySequence(QStringLiteral("Ctrl+S")))
         return 31;
+
+    if (window.findChild<QPushButton *>(QStringLiteral("Menu_ExportBAK")) == nullptr)
+        return 32;
 
     return 0;
 }

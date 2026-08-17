@@ -7,6 +7,7 @@
 #include <QString>
 #include <memory>
 
+class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
 class QKeyEvent;
@@ -35,11 +36,13 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void onMenuOpen();
     void onMenuExportSav();
     void onMenuSavePkm();
+    void onMenuExportBak();
     void onMenuExit();
     void onBoxSelected(int index);
     void onBoxLeft();
@@ -74,6 +77,10 @@ private:
     void startSlotDrag(QLabel *slot, const QString &key);
     void applyDrop(QDropEvent *event, const QString &destKey);
     QByteArray entityBytesFromMime(const QMimeData *mime) const;
+    bool confirmYesNo(const QString &text, const QString &informative);
+    bool confirmOpenSave();
+    bool confirmExportSave();
+    bool confirmClose();
 
     EditorBridge &_editor;
     std::unique_ptr<Ui::MainWindow> _ui;

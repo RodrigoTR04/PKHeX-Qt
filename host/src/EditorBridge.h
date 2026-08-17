@@ -39,4 +39,12 @@ public:
     virtual bool deleteSlot(const QString &key) = 0;
     virtual bool swapSlots(const QString &source, const QString &destination) = 0;
     virtual bool dropOnSlot(const QString &key, const QByteArray &data) = 0;
+    virtual bool needsClosePrompt() const = 0;
+    virtual bool needsOpenPrompt() const = 0;
+    virtual bool needsExportPrompt() const = 0;
+    virtual bool pathIsSave(const QString &path) = 0;
+    virtual bool saveUserConfig() = 0;
+    virtual bool exportBackup(const QString &path) = 0;
+    virtual bool saveEntityPath(const QString &path) = 0;
+    virtual QString suggestedBackupName() = 0;
 };

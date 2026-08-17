@@ -42,6 +42,95 @@ public static class NativeExports
         return App.Session is null ? 0 : 1;
     }
 
+    public static int NeedsClosePrompt(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        return App.NeedsClosePrompt ? 1 : 0;
+    }
+
+    public static int NeedsOpenPrompt(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        return App.NeedsOpenPrompt ? 1 : 0;
+    }
+
+    public static int NeedsExportPrompt(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        return App.NeedsExportPrompt ? 1 : 0;
+    }
+
+    public static int PathIsSave(IntPtr arg, int size)
+    {
+        try
+        {
+            return App.PathIsSave(ReadUtf8(arg, size)) ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int SaveUserConfig(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            App.SaveConfig();
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int ExportBackup(IntPtr arg, int size)
+    {
+        try
+        {
+            App.ExportBackup(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int SaveEntityPath(IntPtr arg, int size)
+    {
+        try
+        {
+            App.SaveEntityToPath(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int PrepareBackupName(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = App.SuggestedBackupName;
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
     public static int SelectSlot(IntPtr arg, int size)
     {
         try
