@@ -7,6 +7,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
+option(PKHEXQT_SELF_CONTAINED "Publish a self-contained .NET runtime next to the Host" OFF)
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
 if(NOT DOTNET_ROOT AND DEFINED ENV{DOTNET_ROOT})
@@ -201,12 +203,19 @@ set_tests_properties(host_title_cli_open_save PROPERTIES
   ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
 if(DOTNET_EXE)
+  if(PKHEXQT_SELF_CONTAINED)
+    set(PKHEXQT_PUBLISH_SELF_CONTAINED 1)
+  else()
+    set(PKHEXQT_PUBLISH_SELF_CONTAINED 0)
+  endif()
   add_custom_command(TARGET pkhex-qt POST_BUILD
     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/publish-editor.sh"
       "${DOTNET_EXE}"
       "$<IF:$<CONFIG:Debug>,Debug,Release>"
       "$<TARGET_FILE_DIR:pkhex-qt>/dotnet"
       "${CMAKE_SOURCE_DIR}/editor/PKHeX.Editor.csproj"
+      "${DOTNET_HOST_RID}"
+      "${PKHEXQT_PUBLISH_SELF_CONTAINED}"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
       "${NETHOST_DIR}/${NETHOST_LIB_NAME}"
       "$<TARGET_FILE_DIR:pkhex-qt>/${NETHOST_LIB_NAME}"

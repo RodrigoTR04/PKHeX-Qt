@@ -80,16 +80,38 @@ DotNetEditorBridge::DotNetEditorBridge()
     if (_hostfxr == nullptr)
         throw std::runtime_error("Could not load hostfxr.");
 
-    auto init = reinterpret_cast<hostfxr_initialize_for_runtime_config_fn>(
-        get_export(_hostfxr, "hostfxr_initialize_for_runtime_config"));
     auto getDelegate = reinterpret_cast<hostfxr_get_runtime_delegate_fn>(
         get_export(_hostfxr, "hostfxr_get_runtime_delegate"));
     _close = reinterpret_cast<close_fn>(get_export(_hostfxr, "hostfxr_close"));
-    if (init == nullptr || getDelegate == nullptr || _close == nullptr)
+    if (getDelegate == nullptr || _close == nullptr)
         throw std::runtime_error("hostfxr is missing required exports.");
 
     hostfxr_handle context{};
-    const int initRc = init(runtimeConfig.c_str(), nullptr, &context);
+    int initRc = -1;
+    const QString bundledRuntime = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("dotnet/libcoreclr.so"));
+    if (QFileInfo::exists(bundledRuntime))
+    {
+        auto initCmd = reinterpret_cast<hostfxr_initialize_for_dotnet_command_line_fn>(
+            get_export(_hostfxr, "hostfxr_initialize_for_dotnet_command_line"));
+        if (initCmd == nullptr)
+            throw std::runtime_error("hostfxr is missing command-line initialization.");
+        const char_t *argv[] = {assembly.c_str()};
+        hostfxr_initialize_parameters initParams{};
+        initParams.size = sizeof(initParams);
+        const std::string hostPath = toFs(QCoreApplication::applicationFilePath());
+        const std::string dotnetRoot = toFs(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("dotnet")));
+        initParams.host_path = hostPath.c_str();
+        initParams.dotnet_root = dotnetRoot.c_str();
+        initRc = initCmd(1, argv, &initParams, &context);
+    }
+    else
+    {
+        auto init = reinterpret_cast<hostfxr_initialize_for_runtime_config_fn>(
+            get_export(_hostfxr, "hostfxr_initialize_for_runtime_config"));
+        if (init == nullptr)
+            throw std::runtime_error("hostfxr is missing runtimeconfig initialization.");
+        initRc = init(runtimeConfig.c_str(), nullptr, &context);
+    }
     if ((initRc != 0 && initRc != 1 && initRc != 2) || context == nullptr)
         throw std::runtime_error("Failed to initialize the .NET runtime.");
     _context = context;

@@ -11,3 +11,5 @@ obj/
 *~
 build/
 cmake-build-*/
+dist/
+

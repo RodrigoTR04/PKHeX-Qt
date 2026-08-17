@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  linux-x64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install Host packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ pkg-config \
+            qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
+            libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev \
+            libxcb-cursor0 libxkbcommon-x11-0
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DPKHEXQT_SELF_CONTAINED=ON
+
+      - name: Build Host
+        run: cmake --build build --target pkhex-qt
+
+      - name: Host smoke
+        run: cmake --build build --target pkhex-qt-host-tests && ctest --test-dir build --output-on-failure
+
+      - name: Editor tests
+        run: dotnet test tests/byte-parity/PKHeX.ByteParity.Tests.csproj -c Release --nologo
+
+      - name: Pack linux-x64 folder
+        run: host/scripts/pack-release.sh build/host dist/pkhex-qt-linux-x64
+
+      - name: Check folder artifact
+        run: host/scripts/check-release.sh dist/pkhex-qt-linux-x64
+
+      - name: Launch without a .NET SDK
+        run: |
+          unset DOTNET_ROOT
+          export PATH=/usr/bin:/bin
+          export QT_QPA_PLATFORM=offscreen
+          set +e
+          timeout 8 dist/pkhex-qt-linux-x64/pkhex-qt
+          status=$?
+          set -e
+          if [ "$status" -eq 124 ] || [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+          echo "packed host exited $status"
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkhex-qt-linux-x64
+          path: dist/pkhex-qt-linux-x64
