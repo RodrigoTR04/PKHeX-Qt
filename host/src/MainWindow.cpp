@@ -2,6 +2,7 @@
 
 #include "AboutWindow.h"
 #include "EditorBridge.h"
+#include "InventoryWindow.h"
 #include "LangCatalog.h"
 #include "PkmTabChrome.h"
 #include "QrWindow.h"
@@ -20,6 +21,7 @@
 #include <QCoreApplication>
 #include <QDate>
 #include <QDateEdit>
+#include <QDialog>
 #include <QDir>
 #include <QDrag>
 #include <QDragEnterEvent>
@@ -271,6 +273,21 @@ bool MainWindow::confirmClose()
 void MainWindow::fillSavChrome()
 {
     fillSavToolButtons(findChild<QWidget *>(QStringLiteral("FLP_SAVtools")));
+    if (auto *items = findChild<QPushButton *>(QStringLiteral("B_OpenItemPouch")))
+        connect(items, &QPushButton::clicked, this, &MainWindow::onOpenInventory);
+}
+
+void MainWindow::onOpenInventory()
+{
+    if (!_editor.hasSession())
+        return;
+    InventoryWindow dialog(this);
+    dialog.loadDocument(_editor.inventoryDocument());
+    connect(&dialog, &InventoryWindow::modifyRequested, this, [&](const QString &action) {
+        dialog.loadDocument(_editor.inventoryModify(action, dialog.document()));
+    });
+    if (dialog.exec() == QDialog::Accepted)
+        _editor.saveInventory(dialog.document());
 }
 
 void MainWindow::fillSlotChrome()

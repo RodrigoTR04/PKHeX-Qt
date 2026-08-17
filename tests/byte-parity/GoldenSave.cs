@@ -14,4 +14,10 @@ internal static class GoldenSave
             throw new InvalidOperationException("Core did not recognize its own blank Gen5 export.");
         return loaded.Write().ToArray();
     }
+
+    /// <summary>
+    /// Blank Scarlet save. Encrypted export is not round-tripped through <see cref="SaveUtil.TryGetSaveFile"/>;
+    /// tests keep the live <see cref="SaveFile"/> like the Editor does after New.
+    /// </summary>
+    public static SaveFile Gen9Blank() => BlankSaveFile.Get(GameVersion.SL);
 }

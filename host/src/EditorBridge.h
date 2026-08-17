@@ -60,4 +60,7 @@ public:
     virtual bool createBackupFolder() = 0;
     virtual bool isExportable() const = 0;
     virtual QString backupDirectory() = 0;
+    virtual QString inventoryDocument() = 0;
+    virtual QString inventoryModify(const QString &action, const QString &json) = 0;
+    virtual bool saveInventory(const QString &json) = 0;
 };

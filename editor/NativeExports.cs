@@ -638,6 +638,53 @@ public static class NativeExports
         }
     }
 
+    public static int PrepareInventory(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().InventoryDocument();
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int InventoryModify(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8(arg, size);
+            var split = raw.IndexOf('\n');
+            if (split <= 0)
+                return -1;
+            _preparedText = RequireSession().InventoryModify(raw[..split], raw[(split + 1)..]);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SaveInventory(IntPtr arg, int size)
+    {
+        try
+        {
+            RequireSession().SaveInventoryDocument(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 

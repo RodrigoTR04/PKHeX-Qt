@@ -54,6 +54,9 @@ public:
     bool createBackupFolder() override;
     bool isExportable() const override;
     QString backupDirectory() override;
+    QString inventoryDocument() override;
+    QString inventoryModify(const QString &action, const QString &json) override;
+    bool saveInventory(const QString &json) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -113,4 +116,7 @@ private:
     component_entry_point_fn _createBackupFolder{};
     component_entry_point_fn _isExportable{};
     component_entry_point_fn _prepareBackupPath{};
+    component_entry_point_fn _prepareInventory{};
+    component_entry_point_fn _inventoryModify{};
+    component_entry_point_fn _saveInventory{};
 };

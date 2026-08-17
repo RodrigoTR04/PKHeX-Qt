@@ -179,6 +179,9 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("CreateBackupFolder", &_createBackupFolder);
     load("IsExportable", &_isExportable);
     load("PrepareBackupPath", &_prepareBackupPath);
+    load("PrepareInventory", &_prepareInventory);
+    load("InventoryModify", &_inventoryModify);
+    load("SaveInventory", &_saveInventory);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -487,6 +490,21 @@ bool DotNetEditorBridge::isExportable() const
 QString DotNetEditorBridge::backupDirectory()
 {
     return readText(_prepareBackupPath, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::inventoryDocument()
+{
+    return readText(_prepareInventory, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::inventoryModify(const QString &action, const QString &json)
+{
+    return readText(_inventoryModify, action + QLatin1Char('\n') + json);
+}
+
+bool DotNetEditorBridge::saveInventory(const QString &json)
+{
+    return call(_saveInventory, json);
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

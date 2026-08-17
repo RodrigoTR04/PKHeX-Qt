@@ -29,6 +29,7 @@ public sealed class EditorSession
     private byte[] _cleanEntity = [];
 
     private readonly ArtworkSpriteComposer _sprites = new();
+    private InventoryEditor? _inventory;
 
     private EditorSession(SaveFile sav)
     {
@@ -60,6 +61,12 @@ public sealed class EditorSession
     public static EditorSession Blank(GameVersion version)
         => new(BlankSaveFile.Get(version));
 
+    public static EditorSession FromSave(SaveFile sav)
+    {
+        ArgumentNullException.ThrowIfNull(sav);
+        return new EditorSession(sav);
+    }
+
     public static EditorSession OpenDropped(EditorSession? current, string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -76,6 +83,38 @@ public sealed class EditorSession
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(operation);
         _operations[name] = operation;
+    }
+
+    public InventoryEditor Inventory =>
+        _inventory ?? throw new InvalidOperationException("Inventory is not open.");
+
+    public void OpenInventory() => _inventory = InventoryEditor.Open(_sav);
+
+    public void SaveInventory()
+    {
+        Inventory.Save();
+        _inventory = null;
+    }
+
+    public void CancelInventory() => _inventory = null;
+
+    public string InventoryDocument() => InventoryEditor.Open(_sav).ToJson();
+
+    public string InventoryModify(string action, string json)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(action);
+        var editor = InventoryEditor.Open(_sav);
+        editor.ApplyJson(json);
+        editor.Modify(action);
+        return editor.ToJson();
+    }
+
+    public void SaveInventoryDocument(string json)
+    {
+        var editor = InventoryEditor.Open(_sav);
+        editor.ApplyJson(json);
+        editor.Save();
+        _inventory = null;
     }
 
     public byte[] Export() => Export([]);

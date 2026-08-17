@@ -64,6 +64,7 @@ set(HOST_SOURCES
   src/ErrorWindow.cpp
   src/SplashScreen.cpp
   src/QrWindow.cpp
+  src/InventoryWindow.cpp
   src/LangCatalog.cpp
   src/SavToolChrome.cpp
   src/SlotChrome.cpp
@@ -76,6 +77,7 @@ set(HOST_HEADERS
   src/SplashScreen.h
   src/AppInfo.h
   src/QrWindow.h
+  src/InventoryWindow.h
   src/EditorBridge.h
   src/LangCatalog.h
   src/SavToolChrome.h
@@ -94,6 +96,7 @@ add_executable(pkhex-qt
   ui/About.ui
   ui/ErrorWindow.ui
   ui/SplashScreen.ui
+  ui/SAV_Inventory.ui
 )
 target_include_directories(pkhex-qt PRIVATE src "${NETHOST_DIR}")
 target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets Qt6::Multimedia nethost ${CMAKE_DL_LIBS})
@@ -114,6 +117,7 @@ add_executable(pkhex-qt-host-tests
   ui/About.ui
   ui/ErrorWindow.ui
   ui/SplashScreen.ui
+  ui/SAV_Inventory.ui
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
 target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets Qt6::Multimedia)

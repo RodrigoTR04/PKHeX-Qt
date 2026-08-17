@@ -2,6 +2,7 @@
 #include "AppInfo.h"
 #include "EditorBridge.h"
 #include "ErrorWindow.h"
+#include "InventoryWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
 
@@ -18,6 +19,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
+#include <QSpinBox>
+#include <QTableWidget>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPlainTextEdit>
@@ -40,6 +43,8 @@ public:
     QString lastSwap;
     QString lastDrop;
     QString lastCry;
+    QString lastInventory;
+    QString lastInventorySave;
     bool session = false;
 
     bool openPath(const QString &path) override
@@ -268,6 +273,30 @@ public:
     QString backupDirectory() override
     {
         return QStringLiteral("/tmp/pkhexqt-bak");
+    }
+
+    QString inventoryDocument() override
+    {
+        lastInventory = QStringLiteral("open");
+        return QStringLiteral(
+            "{\"itemColumnReadOnly\":false,\"hasFavorite\":false,\"hasNew\":false,"
+            "\"hasFreeSpace\":false,\"hasFreeSpaceIndex\":false,\"hasNewShop\":false,"
+            "\"hasHeld\":false,\"currentPouch\":0,\"giveCount\":995,"
+            "\"pouches\":[{\"type\":\"Medicine\",\"maxCount\":999,\"giveDisabled\":false,"
+            "\"choices\":[\"None\",\"Potion\"],"
+            "\"rows\":[{\"itemId\":0,\"item\":\"None\",\"count\":0}]}]}");
+    }
+
+    QString inventoryModify(const QString &action, const QString &json) override
+    {
+        lastInventory = action;
+        return json;
+    }
+
+    bool saveInventory(const QString &json) override
+    {
+        lastInventorySave = json;
+        return true;
     }
 };
 
@@ -534,6 +563,30 @@ int main(int argc, char *argv[])
         return 45;
     splash.show();
     splash.forceClose();
+
+    InventoryWindow inventoryDialog(&window);
+    inventoryDialog.loadDocument(editor.inventoryDocument());
+    if (inventoryDialog.findChild<QObject *>(QStringLiteral("B_Cancel")) == nullptr
+        || inventoryDialog.findChild<QObject *>(QStringLiteral("B_Save")) == nullptr
+        || inventoryDialog.findChild<QObject *>(QStringLiteral("tabControl1")) == nullptr
+        || inventoryDialog.findChild<QObject *>(QStringLiteral("B_GiveAll")) == nullptr
+        || inventoryDialog.findChild<QObject *>(QStringLiteral("B_Sort")) == nullptr
+        || inventoryDialog.findChild<QObject *>(QStringLiteral("L_Count")) == nullptr
+        || inventoryDialog.findChild<QSpinBox *>(QStringLiteral("NUD_Count")) == nullptr
+        || inventoryDialog.findChild<QObject *>(QStringLiteral("tableLayoutPanel1")) == nullptr
+        || inventoryDialog.findChild<QMenu *>(QStringLiteral("sortMenu")) == nullptr
+        || inventoryDialog.findChild<QMenu *>(QStringLiteral("giveMenu")) == nullptr
+        || inventoryDialog.findChild<QAction *>(QStringLiteral("mnuSortName")) == nullptr
+        || inventoryDialog.findChild<QTableWidget *>(QStringLiteral("DGV_Medicine")) == nullptr)
+    {
+        std::cerr << "inventory chrome missing\n";
+        return 46;
+    }
+    if (inventoryDialog.windowTitle() != QLatin1String("Inventory Editor"))
+    {
+        std::cerr << "inventory title was " << inventoryDialog.windowTitle().toStdString() << "\n";
+        return 47;
+    }
 
     return 0;
 }
