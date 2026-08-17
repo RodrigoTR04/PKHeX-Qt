@@ -1,0 +1,11 @@
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.userprefs
+.idea/
+.DS_Store
+*.swp
+*~
