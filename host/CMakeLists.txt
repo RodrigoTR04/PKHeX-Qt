@@ -58,6 +58,9 @@ set_target_properties(nethost PROPERTIES
 
 set(HOST_SOURCES
   src/MainWindow.cpp
+  src/AboutWindow.cpp
+  src/ErrorWindow.cpp
+  src/SplashScreen.cpp
   src/QrWindow.cpp
   src/LangCatalog.cpp
   src/SavToolChrome.cpp
@@ -66,6 +69,10 @@ set(HOST_SOURCES
 )
 set(HOST_HEADERS
   src/MainWindow.h
+  src/AboutWindow.h
+  src/ErrorWindow.h
+  src/SplashScreen.h
+  src/AppInfo.h
   src/QrWindow.h
   src/EditorBridge.h
   src/LangCatalog.h
@@ -82,9 +89,15 @@ add_executable(pkhex-qt
   ${HOST_HEADERS}
   ui/MainWindow.ui
   ui/QR.ui
+  ui/About.ui
+  ui/ErrorWindow.ui
+  ui/SplashScreen.ui
 )
 target_include_directories(pkhex-qt PRIVATE src "${NETHOST_DIR}")
 target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets Qt6::Multimedia nethost ${CMAKE_DL_LIBS})
+target_compile_definitions(pkhex-qt PRIVATE
+  PKHEXQT_VERSION="${PROJECT_VERSION}"
+  PKHEXQT_ORACLE_DATE="26.07.07")
 set_target_properties(pkhex-qt PROPERTIES
   OUTPUT_NAME "pkhex-qt"
   BUILD_RPATH "$ORIGIN"
@@ -96,9 +109,15 @@ add_executable(pkhex-qt-host-tests
   ${HOST_HEADERS}
   ui/MainWindow.ui
   ui/QR.ui
+  ui/About.ui
+  ui/ErrorWindow.ui
+  ui/SplashScreen.ui
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
 target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets Qt6::Multimedia)
+target_compile_definitions(pkhex-qt-host-tests PRIVATE
+  PKHEXQT_VERSION="${PROJECT_VERSION}"
+  PKHEXQT_ORACLE_DATE="26.07.07")
 
 function(pkhexqt_copy_lang target)
   add_custom_command(TARGET ${target} POST_BUILD
@@ -111,6 +130,19 @@ endfunction()
 
 pkhexqt_copy_lang(pkhex-qt)
 pkhexqt_copy_lang(pkhex-qt-host-tests)
+
+function(pkhexqt_copy_about target)
+  add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/about"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/assets/about/shortcuts.txt"
+      "${CMAKE_SOURCE_DIR}/assets/about/changelog.txt"
+      "$<TARGET_FILE_DIR:${target}>/about"
+    VERBATIM)
+endfunction()
+
+pkhexqt_copy_about(pkhex-qt)
+pkhexqt_copy_about(pkhex-qt-host-tests)
 
 set(ORACLE_SPRITES "${CMAKE_SOURCE_DIR}/PKHeX-26.07.07/PKHeX.Drawing.PokeSprite/Resources/img")
 set(ORACLE_WALLPAPERS "${CMAKE_SOURCE_DIR}/PKHeX-26.07.07/PKHeX.Drawing.Misc/Resources/img/box")

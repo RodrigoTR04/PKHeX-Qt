@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+#include "AboutWindow.h"
 #include "EditorBridge.h"
 #include "LangCatalog.h"
 #include "PkmTabChrome.h"
@@ -71,6 +72,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     connect(_ui->Menu_ShowdownExportPKM, &QAction::triggered, this, &MainWindow::onShowdownExportPkm);
     connect(_ui->Menu_ShowdownExportParty, &QAction::triggered, this, &MainWindow::onShowdownExportParty);
     connect(_ui->Menu_ShowdownExportCurrentBox, &QAction::triggered, this, &MainWindow::onShowdownExportBox);
+    connect(_ui->Menu_About, &QAction::triggered, this, &MainWindow::onMenuAbout);
     updateExportEnabled();
 }
 
@@ -208,6 +210,12 @@ void MainWindow::updateExportEnabled()
 void MainWindow::onMenuExit()
 {
     close();
+}
+
+void MainWindow::onMenuAbout()
+{
+    AboutWindow dialog(this);
+    dialog.exec();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

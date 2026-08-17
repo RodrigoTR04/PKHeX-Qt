@@ -1,7 +1,10 @@
+#include "AboutWindow.h"
+#include "AppInfo.h"
 #include "EditorBridge.h"
+#include "ErrorWindow.h"
 #include "MainWindow.h"
+#include "SplashScreen.h"
 
-#include <QAction>
 #include <QAction>
 #include <QApplication>
 #include <QByteArray>
@@ -17,6 +20,7 @@
 #include <QMenu>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSplitter>
 #include <QString>
@@ -353,6 +357,8 @@ int main(int argc, char *argv[])
     auto *about = window.findChild<QAction *>(QStringLiteral("Menu_About"));
     if (about == nullptr || about->text() != QLatin1String("&About PKHeX"))
         return 14;
+    if (about->shortcut() != QKeySequence(QStringLiteral("Ctrl+P")))
+        return 37;
 
     if (window.findChild<QObject *>(QStringLiteral("DarkMode")) != nullptr
         || window.findChild<QObject *>(QStringLiteral("chkDarkMode")) != nullptr)
@@ -479,6 +485,55 @@ int main(int argc, char *argv[])
 
     if (window.findChild<QPushButton *>(QStringLiteral("Menu_ExportBAK")) == nullptr)
         return 32;
+
+    AboutWindow aboutDialog(&window);
+    auto *disclaimer = aboutDialog.findChild<QLabel *>(QStringLiteral("L_Disclaimer"));
+    auto *version = aboutDialog.findChild<QLabel *>(QStringLiteral("L_Version"));
+    auto *notices = aboutDialog.findChild<QPlainTextEdit *>(QStringLiteral("RTB_Notices"));
+    if (disclaimer == nullptr || !disclaimer->text().contains(QLatin1String("unofficial"), Qt::CaseInsensitive))
+    {
+        std::cerr << "about disclaimer missing\n";
+        return 38;
+    }
+    if (version == nullptr
+        || !version->text().contains(pkhexQtVersion())
+        || !version->text().contains(pkhexOracleDate()))
+    {
+        std::cerr << "about version was " << (version ? version->text().toStdString() : "null") << "\n";
+        return 39;
+    }
+    if (notices == nullptr
+        || !notices->toPlainText().contains(QLatin1String("GPL-3"))
+        || !notices->toPlainText().contains(QLatin1String("LGPL"))
+        || !notices->toPlainText().contains(QLatin1String("QRCoder")))
+    {
+        std::cerr << "about notices missing licenses\n";
+        return 40;
+    }
+    if (aboutDialog.findChild<QObject *>(QStringLiteral("TC_About")) == nullptr
+        || aboutDialog.findChild<QObject *>(QStringLiteral("Tab_Shortcuts")) == nullptr)
+        return 41;
+
+    ErrorWindow errorDialog;
+    errorDialog.loadException(QStringLiteral("friendly boom"), QStringLiteral("stack-trace-here"), true);
+    if (!errorDialog.detailsText().contains(QLatin1String("stack-trace-here"))
+        || !errorDialog.detailsText().contains(QLatin1String("friendly boom")))
+        return 42;
+    errorDialog.copyDetails();
+    if (clip == nullptr || !clip->text().contains(QLatin1String("stack-trace-here")))
+        return 43;
+    if (errorDialog.findChild<QObject *>(QStringLiteral("B_CopyToClipboard")) == nullptr
+        || errorDialog.findChild<QObject *>(QStringLiteral("T_ExceptionDetails")) == nullptr)
+        return 44;
+
+    SplashScreen splash;
+    auto *status = splash.findChild<QLabel *>(QStringLiteral("L_Status"));
+    if (splash.objectName() != QLatin1String("SplashScreen")
+        || status == nullptr
+        || !status->text().contains(QLatin1String("Starting up")))
+        return 45;
+    splash.show();
+    splash.forceClose();
 
     return 0;
 }

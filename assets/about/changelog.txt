@@ -1,0 +1,4 @@
+PKHeX Qt 0.1.0
+Oracle 26.07.07
+
+Unofficial independent port. Main window editing is in progress; subforms follow.

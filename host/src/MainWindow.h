@@ -57,6 +57,7 @@ private slots:
     void onShowdownExportPkm();
     void onShowdownExportParty();
     void onShowdownExportBox();
+    void onMenuAbout();
     void clickQr();
     void importQrFromClipboard();
     void exportQrWindow();
