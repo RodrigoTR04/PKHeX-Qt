@@ -4,11 +4,16 @@
 #include <QAction>
 #include <QApplication>
 #include <QByteArray>
+#include <QClipboard>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QEvent>
+#include <QGuiApplication>
+#include <QKeyEvent>
+#include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMimeData>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSplitter>
@@ -97,6 +102,36 @@ public:
     QString fieldChoices(const QString &) override
     {
         return QStringLiteral("1\tBulbasaur");
+    }
+
+    QString previewShowdown(const QString &text) override
+    {
+        return text.contains(QLatin1String("Bulbasaur")) ? QStringLiteral("Bulbasaur") : QString();
+    }
+
+    bool importShowdown(const QString &) override
+    {
+        return true;
+    }
+
+    QString exportShowdown(const QString &) override
+    {
+        return QStringLiteral("Bulbasaur");
+    }
+
+    QByteArray exportEntity() override
+    {
+        return QByteArray(8, 'P');
+    }
+
+    QString entityFileName() override
+    {
+        return QStringLiteral("Bulbasaur.pk5");
+    }
+
+    bool importEntity(const QByteArray &) override
+    {
+        return true;
     }
 };
 
@@ -230,6 +265,28 @@ int main(int argc, char *argv[])
     {
         std::cerr << "nickname font was " << nickFamily.toStdString() << "\n";
         return 21;
+    }
+
+    auto *importSet = window.findChild<QAction *>(QStringLiteral("Menu_ShowdownImportPKM"));
+    auto *exportSet = window.findChild<QAction *>(QStringLiteral("Menu_ShowdownExportPKM"));
+    if (importSet == nullptr || exportSet == nullptr)
+        return 22;
+    if (importSet->shortcut() != QKeySequence(QStringLiteral("Ctrl+T")))
+        return 23;
+    if (exportSet->shortcut() != QKeySequence(QStringLiteral("Ctrl+Shift+T")))
+        return 24;
+    if (!importSet->isEnabled())
+        return 25;
+
+    window.setFocus(Qt::OtherFocusReason);
+    QKeyEvent copyKey(QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier);
+    QCoreApplication::sendEvent(&window, &copyKey);
+    auto *clip = QGuiApplication::clipboard();
+    if (clip == nullptr || clip->mimeData() == nullptr
+        || !clip->mimeData()->hasFormat(QStringLiteral("application/x-pkhex-pokemon")))
+    {
+        std::cerr << "entity clipboard mime missing\n";
+        return 26;
     }
 
     return 0;

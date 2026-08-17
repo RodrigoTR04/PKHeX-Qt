@@ -304,10 +304,16 @@
    <property name="text">
     <string>&amp;Import Set from Clipboard</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
   </action>
   <action name="Menu_ShowdownExportPKM">
    <property name="text">
     <string>&amp;Export Set to Clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
    </property>
   </action>
   <action name="Menu_ShowdownExportParty">

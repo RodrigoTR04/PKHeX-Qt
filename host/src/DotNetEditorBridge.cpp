@@ -121,6 +121,12 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PrepareLegalityReport", &_prepareLegalityReport);
     load("GetChoices", &_getChoices);
     load("CopyPreparedText", &_copyPreparedText);
+    load("PreviewShowdown", &_previewShowdown);
+    load("ImportShowdown", &_importShowdown);
+    load("PrepareShowdownExport", &_prepareShowdownExport);
+    load("PrepareEntityCopy", &_prepareEntityCopy);
+    load("PrepareEntityFileName", &_prepareEntityFileName);
+    load("ImportEntity", &_importEntity);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -232,6 +238,51 @@ QString DotNetEditorBridge::legalityReport(bool verbose)
 QString DotNetEditorBridge::fieldChoices(const QString &name)
 {
     return readText(_getChoices, name);
+}
+
+QString DotNetEditorBridge::previewShowdown(const QString &text)
+{
+    return readText(_previewShowdown, text);
+}
+
+bool DotNetEditorBridge::importShowdown(const QString &text)
+{
+    return call(_importShowdown, text);
+}
+
+QString DotNetEditorBridge::exportShowdown(const QString &scope)
+{
+    return readText(_prepareShowdownExport, scope);
+}
+
+QByteArray DotNetEditorBridge::readBinary(component_entry_point_fn prepare) const
+{
+    if (prepare == nullptr || _copyPreparedPng == nullptr)
+        return {};
+    const int length = prepare(nullptr, 0);
+    if (length <= 0)
+        return {};
+    QByteArray data(length, '\0');
+    if (_copyPreparedPng(data.data(), data.size()) != 0)
+        return {};
+    return data;
+}
+
+QByteArray DotNetEditorBridge::exportEntity()
+{
+    return readBinary(_prepareEntityCopy);
+}
+
+QString DotNetEditorBridge::entityFileName()
+{
+    return readText(_prepareEntityFileName, QStringLiteral("-"));
+}
+
+bool DotNetEditorBridge::importEntity(const QByteArray &data)
+{
+    if (_importEntity == nullptr || data.isEmpty())
+        return false;
+    return _importEntity(const_cast<void *>(static_cast<const void *>(data.constData())), data.size()) == 0;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

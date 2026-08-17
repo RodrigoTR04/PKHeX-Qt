@@ -153,4 +153,64 @@ public sealed class EditorSession
 
     public byte[] ComposeWallpaperPng(int box)
         => _sprites.ComposeWallpaper(_sav, box);
+
+    public string ExportShowdown()
+        => ShowdownParsing.GetShowdownText(RequireCurrent());
+
+    public string ExportPartyShowdown()
+        => ShowdownParsing.GetShowdownSets(_sav.PartyData, Environment.NewLine + Environment.NewLine);
+
+    public string ExportCurrentBoxShowdown()
+        => ShowdownParsing.GetShowdownSets(_sav.GetBoxData(CurrentBox), Environment.NewLine + Environment.NewLine);
+
+    public string PreviewShowdown(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var set = FirstSet(text);
+        return set.Species == 0 ? string.Empty : set.GetText(BattleTemplateExportSettings.Showdown);
+    }
+
+    public void ImportShowdown(string text)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(text);
+        var set = FirstSet(text);
+        if (set.Species == 0)
+            throw new InvalidDataException("Set data not found.");
+        var pk = RequireCurrent();
+        pk.ApplySetDetails(set);
+        CurrentEntity = pk.Data.ToArray();
+    }
+
+    public byte[] ExportEntity()
+    {
+        var pk = RequireCurrent();
+        pk.RefreshChecksum();
+        var data = new byte[pk.SIZE_PARTY];
+        pk.WriteDecryptedDataParty(data);
+        return data;
+    }
+
+    public string EntityFileName => RequireCurrent().FileName;
+
+    public void ImportEntity(ReadOnlyMemory<byte> data, string extension = "")
+    {
+        if (data.Length == 0)
+            throw new InvalidDataException("Entity data was empty.");
+        var ext = string.IsNullOrEmpty(extension) ? $".{RequireCurrent().Extension}" : extension;
+        if (!FileUtil.TryGetPKM(data.ToArray(), out var pk, ext, _sav))
+        {
+            pk = EntityFormat.GetFromBytes(data.ToArray());
+            if (pk is null)
+                throw new InvalidDataException("Unrecognized Pokémon file.");
+        }
+        var destType = _sav.PKMType;
+        var converted = EntityConverter.ConvertToType(pk, destType, out _)
+            ?? throw new InvalidDataException("Could not convert that Pokémon to this save.");
+        if (ReferenceEquals(pk, converted))
+            _sav.AdaptToSaveFile(converted);
+        LoadCurrent(converted, _partyOrigin, _originBox, _originSlot);
+    }
+
+    private static ShowdownSet FirstSet(string text)
+        => BattleTemplateTeams.TryGetSets(text).FirstOrDefault() ?? new ShowdownSet(string.Empty);
 }

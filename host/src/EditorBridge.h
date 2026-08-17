@@ -28,4 +28,10 @@ public:
     virtual bool legalityValid() const = 0;
     virtual QString legalityReport(bool verbose) = 0;
     virtual QString fieldChoices(const QString &name) = 0;
+    virtual QString previewShowdown(const QString &text) = 0;
+    virtual bool importShowdown(const QString &text) = 0;
+    virtual QString exportShowdown(const QString &scope) = 0;
+    virtual QByteArray exportEntity() = 0;
+    virtual QString entityFileName() = 0;
+    virtual bool importEntity(const QByteArray &data) = 0;
 };

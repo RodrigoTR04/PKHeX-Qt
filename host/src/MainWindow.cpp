@@ -7,21 +7,29 @@
 #include "SlotChrome.h"
 #include "ui_MainWindow.h"
 
+#include <QAbstractSpinBox>
 #include <QCheckBox>
+#include <QClipboard>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDate>
 #include <QDateEdit>
 #include <QDir>
 #include <QEvent>
+#include <QFile>
 #include <QFileDialog>
+#include <QGuiApplication>
+#include <QKeyEvent>
+#include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QSpinBox>
+#include <QUrl>
 #include <QWidget>
 
 MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
@@ -40,6 +48,10 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     connect(_ui->Menu_Open, &QAction::triggered, this, &MainWindow::onMenuOpen);
     connect(_ui->Menu_ExportSAV, &QAction::triggered, this, &MainWindow::onMenuExportSav);
     connect(_ui->Menu_Exit, &QAction::triggered, this, &MainWindow::onMenuExit);
+    connect(_ui->Menu_ShowdownImportPKM, &QAction::triggered, this, &MainWindow::onShowdownImport);
+    connect(_ui->Menu_ShowdownExportPKM, &QAction::triggered, this, &MainWindow::onShowdownExportPkm);
+    connect(_ui->Menu_ShowdownExportParty, &QAction::triggered, this, &MainWindow::onShowdownExportParty);
+    connect(_ui->Menu_ShowdownExportCurrentBox, &QAction::triggered, this, &MainWindow::onShowdownExportBox);
     updateExportEnabled();
 }
 
@@ -99,7 +111,12 @@ void MainWindow::onMenuExportSav()
 
 void MainWindow::updateExportEnabled()
 {
-    _ui->Menu_ExportSAV->setEnabled(_editor.hasSession());
+    const bool open = _editor.hasSession();
+    _ui->Menu_ExportSAV->setEnabled(open);
+    _ui->Menu_ShowdownImportPKM->setEnabled(open);
+    _ui->Menu_ShowdownExportPKM->setEnabled(open);
+    _ui->Menu_ShowdownExportParty->setEnabled(open);
+    _ui->Menu_ShowdownExportCurrentBox->setEnabled(open);
 }
 
 void MainWindow::onMenuExit()
@@ -478,4 +495,154 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
     }
     return QMainWindow::eventFilter(watched, event);
+}
+
+namespace
+{
+constexpr auto kEntityMime = "application/x-pkhex-pokemon";
+}
+
+void MainWindow::onShowdownImport()
+{
+    if (!_editor.hasSession())
+        return;
+    auto *clip = QGuiApplication::clipboard();
+    if (clip == nullptr || clip->text().isEmpty())
+    {
+        QMessageBox::warning(this, windowTitle(), tr("Set data not found in clipboard."));
+        return;
+    }
+    const QString text = clip->text();
+    const QString preview = _editor.previewShowdown(text);
+    if (preview.isEmpty())
+    {
+        QMessageBox::warning(this, windowTitle(), tr("Set data not found in clipboard."));
+        return;
+    }
+    const auto answer = QMessageBox::question(this, windowTitle(), tr("Import this set?\n\n%1").arg(preview));
+    if (answer != QMessageBox::Yes)
+        return;
+    if (!_editor.importShowdown(text))
+    {
+        QMessageBox::warning(this, windowTitle(), tr("Set data not found in clipboard."));
+        return;
+    }
+    refreshPkmEditor();
+}
+
+void MainWindow::onShowdownExportPkm()
+{
+    copyShowdown(QStringLiteral("pkm"), tr("Exported Showdown Set to Clipboard:"));
+}
+
+void MainWindow::onShowdownExportParty()
+{
+    copyShowdown(QStringLiteral("party"), tr("Showdown Team (Party) set to Clipboard."));
+}
+
+void MainWindow::onShowdownExportBox()
+{
+    copyShowdown(QStringLiteral("box"), tr("Showdown Sets copied to Clipboard."));
+}
+
+void MainWindow::copyShowdown(const QString &scope, const QString &success)
+{
+    if (!_editor.hasSession())
+        return;
+    const QString text = _editor.exportShowdown(scope);
+    if (text.trimmed().isEmpty())
+        return;
+    auto *clip = QGuiApplication::clipboard();
+    if (clip == nullptr)
+        return;
+    clip->setText(text);
+    if (scope == QLatin1String("pkm"))
+        QMessageBox::information(this, windowTitle(), success + QLatin1Char('\n') + text);
+    else
+        QMessageBox::information(this, windowTitle(), success);
+}
+
+void MainWindow::copyEntityToClipboard()
+{
+    if (!_editor.hasSession())
+        return;
+    const QByteArray data = _editor.exportEntity();
+    if (data.isEmpty())
+        return;
+    auto *clip = QGuiApplication::clipboard();
+    if (clip == nullptr)
+        return;
+    auto *mime = new QMimeData();
+    mime->setData(QString::fromLatin1(kEntityMime), data);
+    const QString name = _editor.entityFileName();
+    if (!name.isEmpty())
+    {
+        const QString path = QDir::temp().filePath(name);
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            file.write(data);
+            file.close();
+            mime->setUrls({QUrl::fromLocalFile(path)});
+        }
+    }
+    clip->setMimeData(mime);
+}
+
+void MainWindow::pasteEntityFromClipboard()
+{
+    if (!_editor.hasSession())
+        return;
+    auto *clip = QGuiApplication::clipboard();
+    if (clip == nullptr)
+        return;
+    const QMimeData *mime = clip->mimeData();
+    if (mime == nullptr)
+        return;
+    QByteArray data;
+    if (mime->hasFormat(QString::fromLatin1(kEntityMime)))
+        data = mime->data(QString::fromLatin1(kEntityMime));
+    else if (mime->hasUrls())
+    {
+        for (const auto &url : mime->urls())
+        {
+            const QString path = url.toLocalFile();
+            if (path.isEmpty())
+                continue;
+            QFile file(path);
+            if (file.open(QIODevice::ReadOnly))
+            {
+                data = file.readAll();
+                break;
+            }
+        }
+    }
+    if (data.isEmpty() || !_editor.importEntity(data))
+        return;
+    refreshPkmEditor();
+}
+
+bool MainWindow::textWidgetHasFocus() const
+{
+    auto *focus = focusWidget();
+    return qobject_cast<QLineEdit *>(focus) != nullptr
+        || qobject_cast<QAbstractSpinBox *>(focus) != nullptr;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (!textWidgetHasFocus())
+    {
+        if (event->matches(QKeySequence::Copy))
+        {
+            copyEntityToClipboard();
+            return;
+        }
+        if (event->matches(QKeySequence::Paste))
+        {
+            pasteEntityFromClipboard();
+            return;
+        }
+    }
+    QMainWindow::keyPressEvent(event);
 }

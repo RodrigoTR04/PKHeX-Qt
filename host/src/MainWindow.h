@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <memory>
 
+class QKeyEvent;
+
 namespace Ui
 {
 class MainWindow;
@@ -23,6 +25,7 @@ public:
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
     void onMenuOpen();
@@ -33,6 +36,10 @@ private slots:
     void onBoxRight();
     void onLegalityClicked();
     void onPkmFieldEdited();
+    void onShowdownImport();
+    void onShowdownExportPkm();
+    void onShowdownExportParty();
+    void onShowdownExportBox();
 
 private:
     void updateExportEnabled();
@@ -49,6 +56,10 @@ private:
     void fillComboChoices(const QString &name);
     void applyFieldValue(const QString &name, const QString &value);
     void writeField(const QString &name, const QString &value);
+    void copyShowdown(const QString &scope, const QString &success);
+    void copyEntityToClipboard();
+    void pasteEntityFromClipboard();
+    bool textWidgetHasFocus() const;
 
     EditorBridge &_editor;
     std::unique_ptr<Ui::MainWindow> _ui;

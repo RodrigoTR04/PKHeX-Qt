@@ -24,6 +24,12 @@ public:
     bool legalityValid() const override;
     QString legalityReport(bool verbose) override;
     QString fieldChoices(const QString &name) override;
+    QString previewShowdown(const QString &text) override;
+    bool importShowdown(const QString &text) override;
+    QString exportShowdown(const QString &scope) override;
+    QByteArray exportEntity() override;
+    QString entityFileName() override;
+    bool importEntity(const QByteArray &data) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -31,6 +37,8 @@ private:
 
     bool call(component_entry_point_fn fn, const QString &path) const;
     QString readText(component_entry_point_fn prepare, const QString &key) const;
+
+    QByteArray readBinary(component_entry_point_fn prepare) const;
 
     void *_hostfxr{};
     void *_context{};
@@ -50,4 +58,10 @@ private:
     component_entry_point_fn _prepareLegalityReport{};
     component_entry_point_fn _getChoices{};
     component_entry_point_fn _copyPreparedText{};
+    component_entry_point_fn _previewShowdown{};
+    component_entry_point_fn _importShowdown{};
+    component_entry_point_fn _prepareShowdownExport{};
+    component_entry_point_fn _prepareEntityCopy{};
+    component_entry_point_fn _prepareEntityFileName{};
+    component_entry_point_fn _importEntity{};
 };

@@ -223,6 +223,103 @@ public static class NativeExports
         return 0;
     }
 
+    public static int PreviewShowdown(IntPtr arg, int size)
+    {
+        try
+        {
+            _preparedText = RequireSession().PreviewShowdown(ReadUtf8(arg, size));
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int ImportShowdown(IntPtr arg, int size)
+    {
+        try
+        {
+            RequireSession().ImportShowdown(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int PrepareShowdownExport(IntPtr arg, int size)
+    {
+        try
+        {
+            var scope = ReadUtf8(arg, size);
+            var session = RequireSession();
+            _preparedText = scope switch
+            {
+                "party" => session.ExportPartyShowdown(),
+                "box" => session.ExportCurrentBoxShowdown(),
+                _ => session.ExportShowdown(),
+            };
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int PrepareEntityCopy(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedPng = RequireSession().ExportEntity();
+            return _preparedPng.Length;
+        }
+        catch
+        {
+            _preparedPng = null;
+            return -1;
+        }
+    }
+
+    public static int PrepareEntityFileName(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().EntityFileName;
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int ImportEntity(IntPtr arg, int size)
+    {
+        try
+        {
+            if (arg == IntPtr.Zero || size <= 0)
+                return 1;
+            var data = new byte[size];
+            Marshal.Copy(arg, data, 0, size);
+            RequireSession().ImportEntity(data);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 
