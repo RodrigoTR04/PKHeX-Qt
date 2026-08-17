@@ -37,6 +37,7 @@ public:
     virtual QString entityFileName() = 0;
     virtual bool importEntity(const QByteArray &data) = 0;
     virtual QString slotPreview(const QString &key) = 0;
+    virtual QString slotCryPath(const QString &key) = 0;
     virtual bool writeCurrentToSlot(const QString &key) = 0;
     virtual bool deleteSlot(const QString &key) = 0;
     virtual bool swapSlots(const QString &source, const QString &destination) = 0;

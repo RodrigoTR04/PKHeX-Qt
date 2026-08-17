@@ -312,6 +312,12 @@ public sealed class EditorSession
         return ShowdownParsing.GetLocalizedPreviewText(pk, BattleTemplateExportSettings.Showdown);
     }
 
+    public string SlotCryPath(string cryFolder, bool party, int box, int slot)
+    {
+        var pk = ReadSlot(party, box, slot);
+        return CryPath.ExistingWav(pk.Species, pk.Form, pk.Context, cryFolder);
+    }
+
     public void ImportEntityFromPath(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);

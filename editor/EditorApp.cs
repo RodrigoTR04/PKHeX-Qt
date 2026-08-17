@@ -35,6 +35,13 @@ public sealed class EditorApp
     public bool NeedsExportPrompt => Session?.NeedsExportPrompt(Config.CheckUnsavedEntityOnExport) == true;
     public bool IsExportable => Session?.IsExportable == true;
 
+    public string SlotCryPath(bool party, int box, int slot)
+    {
+        if (!Config.HoverSlotPlayCry || Session is null)
+            return string.Empty;
+        return Session.SlotCryPath(Config.SoundDirectory, party, box, slot);
+    }
+
     public void OpenFromPath(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);

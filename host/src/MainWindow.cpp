@@ -33,7 +33,9 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSignalBlocker>
+#include <QSoundEffect>
 #include <QSpinBox>
+#include <QUrl>
 #include <QUrl>
 #include <QWidget>
 
@@ -41,6 +43,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     : QMainWindow(parent)
     , _editor(editor)
     , _ui(std::make_unique<Ui::MainWindow>())
+    , _cry(std::make_unique<QSoundEffect>())
 {
     _ui->setupUi(this);
     fillSavChrome();
@@ -790,7 +793,13 @@ bool MainWindow::handleSlotMouse(QObject *watched, QEvent *event)
     {
     case QEvent::Enter:
         if (!key.isEmpty() && _editor.hasSession())
+        {
             static_cast<QWidget *>(watched)->setToolTip(_editor.slotPreview(key));
+            playSlotCry(key);
+        }
+        return false;
+    case QEvent::Leave:
+        stopSlotCry();
         return false;
     case QEvent::DragEnter:
     case QEvent::DragMove:
@@ -962,4 +971,22 @@ QByteArray MainWindow::entityBytesFromMime(const QMimeData *mime) const
             return file.readAll();
     }
     return {};
+}
+
+void MainWindow::playSlotCry(const QString &key)
+{
+    const QString path = _editor.slotCryPath(key);
+    if (path.isEmpty())
+    {
+        stopSlotCry();
+        return;
+    }
+    _cry->setSource(QUrl::fromLocalFile(path));
+    _cry->play();
+}
+
+void MainWindow::stopSlotCry()
+{
+    if (_cry->isPlaying())
+        _cry->stop();
 }

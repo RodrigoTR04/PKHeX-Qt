@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <memory>
 
+class QSoundEffect;
 class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
@@ -85,6 +86,8 @@ private:
     bool confirmExportSave();
     bool confirmClose();
     void syncSession();
+    void playSlotCry(const QString &key);
+    void stopSlotCry();
 
     EditorBridge &_editor;
     std::unique_ptr<Ui::MainWindow> _ui;
@@ -92,4 +95,5 @@ private:
     QPoint _pressPos;
     QString _pressKey;
     bool _dragging = false;
+    std::unique_ptr<QSoundEffect> _cry;
 };

@@ -480,6 +480,21 @@ public static class NativeExports
         }
     }
 
+    public static int SlotCryPath(IntPtr arg, int size)
+    {
+        try
+        {
+            ParseSlotKey(ReadUtf8(arg, size), out var party, out var box, out var slot);
+            _preparedText = App.SlotCryPath(party, box, slot);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
     public static int WriteCurrentToSlot(IntPtr arg, int size)
     {
         try

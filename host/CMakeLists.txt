@@ -7,7 +7,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
 if(NOT DOTNET_ROOT AND DEFINED ENV{DOTNET_ROOT})
   set(DOTNET_ROOT "$ENV{DOTNET_ROOT}")
@@ -81,7 +81,7 @@ add_executable(pkhex-qt
   ui/MainWindow.ui
 )
 target_include_directories(pkhex-qt PRIVATE src "${NETHOST_DIR}")
-target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets nethost ${CMAKE_DL_LIBS})
+target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets Qt6::Multimedia nethost ${CMAKE_DL_LIBS})
 set_target_properties(pkhex-qt PROPERTIES
   OUTPUT_NAME "pkhex-qt"
   BUILD_RPATH "$ORIGIN"
@@ -94,7 +94,7 @@ add_executable(pkhex-qt-host-tests
   ui/MainWindow.ui
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
-target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets)
+target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets Qt6::Multimedia)
 
 function(pkhexqt_copy_lang target)
   add_custom_command(TARGET ${target} POST_BUILD

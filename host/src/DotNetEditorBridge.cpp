@@ -129,6 +129,7 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PrepareEntityFileName", &_prepareEntityFileName);
     load("ImportEntity", &_importEntity);
     load("SlotPreview", &_slotPreview);
+    load("SlotCryPath", &_slotCryPath);
     load("WriteCurrentToSlot", &_writeCurrentToSlot);
     load("DeleteSlot", &_deleteSlot);
     load("SwapSlots", &_swapSlots);
@@ -307,6 +308,11 @@ bool DotNetEditorBridge::importEntity(const QByteArray &data)
 QString DotNetEditorBridge::slotPreview(const QString &key)
 {
     return readText(_slotPreview, key);
+}
+
+QString DotNetEditorBridge::slotCryPath(const QString &key)
+{
+    return readText(_slotCryPath, key);
 }
 
 bool DotNetEditorBridge::writeCurrentToSlot(const QString &key)

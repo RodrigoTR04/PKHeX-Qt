@@ -23,6 +23,8 @@ public sealed class UserConfig
     public List<string> OtherBackupPaths { get; set; } = [];
     public uint RecentlyLoadedMaxCount { get; set; } = 10;
     public string TemplatePath { get; set; } = "template";
+    public string SoundPath { get; set; } = "sounds";
+    public bool HoverSlotPlayCry { get; set; } = true;
 
     [JsonIgnore]
     public string FilePath => Path.Combine(Root, FileName);
@@ -32,6 +34,9 @@ public sealed class UserConfig
 
     [JsonIgnore]
     public string TemplateDirectory => Resolve(TemplatePath);
+
+    [JsonIgnore]
+    public string SoundDirectory => Resolve(SoundPath);
 
     public static string DefaultRoot()
         => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PKHeX-Qt");

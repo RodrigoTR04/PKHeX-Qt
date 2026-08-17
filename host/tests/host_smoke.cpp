@@ -33,6 +33,7 @@ public:
     QString lastDelete;
     QString lastSwap;
     QString lastDrop;
+    QString lastCry;
     bool session = false;
 
     bool openPath(const QString &path) override
@@ -141,6 +142,12 @@ public:
     QString slotPreview(const QString &key) override
     {
         return QStringLiteral("preview:") + key;
+    }
+
+    QString slotCryPath(const QString &key) override
+    {
+        lastCry = key;
+        return {};
     }
 
     bool writeCurrentToSlot(const QString &key) override
@@ -396,6 +403,11 @@ int main(int argc, char *argv[])
     {
         std::cerr << "tooltip was " << slot->toolTip().toStdString() << "\n";
         return 28;
+    }
+    if (editor.lastCry != QLatin1String("box:0:0"))
+    {
+        std::cerr << "cry was " << editor.lastCry.toStdString() << "\n";
+        return 33;
     }
 
     QMouseEvent shiftPress(
