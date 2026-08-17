@@ -1,6 +1,8 @@
 #pragma once
 
-class QString;
+#include <QString>
+#include <QStringList>
+
 class QByteArray;
 
 struct StorageLayout
@@ -47,4 +49,9 @@ public:
     virtual bool exportBackup(const QString &path) = 0;
     virtual bool saveEntityPath(const QString &path) = 0;
     virtual QString suggestedBackupName() = 0;
+    virtual bool applyStartup(const QStringList &args) = 0;
+    virtual bool takeBackupPrompt() = 0;
+    virtual bool createBackupFolder() = 0;
+    virtual bool isExportable() const = 0;
+    virtual QString backupDirectory() = 0;
 };

@@ -131,6 +131,62 @@ public static class NativeExports
         }
     }
 
+    public static int ApplyStartup(IntPtr arg, int size)
+    {
+        try
+        {
+            var text = arg == IntPtr.Zero || size <= 0
+                ? string.Empty
+                : ReadUtf8AllowEmpty(arg, size);
+            var args = string.IsNullOrEmpty(text)
+                ? Array.Empty<string>()
+                : text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            App.TryStartup(args);
+            return App.Session is null ? 1 : 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int TakeBackupPrompt(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        return App.TakeBackupPrompt() ? 1 : 0;
+    }
+
+    public static int CreateBackupFolder(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            App.CreateBackupFolder();
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int IsExportable(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        return App.IsExportable ? 1 : 0;
+    }
+
+    public static int PrepareBackupPath(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        _preparedText = App.Config.BackupDirectory;
+        return EncodingLength(_preparedText);
+    }
+
     public static int SelectSlot(IntPtr arg, int size)
     {
         try
@@ -526,6 +582,13 @@ public static class NativeExports
         }
 
         throw new FormatException("Slot key was not box:box:slot or party:slot.");
+    }
+
+    private static string ReadUtf8AllowEmpty(IntPtr arg, int size)
+    {
+        if (arg == IntPtr.Zero || size <= 0)
+            return string.Empty;
+        return (Marshal.PtrToStringUTF8(arg, size) ?? string.Empty).TrimEnd('\0');
     }
 
     private static string ReadUtf8(IntPtr arg, int size)

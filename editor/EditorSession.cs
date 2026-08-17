@@ -23,6 +23,7 @@ public sealed class EditorSession
 
     private PKM? _current;
     private bool _partyOrigin;
+    private bool _bound;
     private int _originBox;
     private int _originSlot;
     private byte[] _cleanEntity = [];
@@ -55,6 +56,9 @@ public sealed class EditorSession
             throw new InvalidDataException("Unrecognized save file.");
         return new EditorSession(sav);
     }
+
+    public static EditorSession Blank(GameVersion version)
+        => new(BlankSaveFile.Get(version));
 
     public static EditorSession OpenDropped(EditorSession? current, string path)
     {
@@ -130,6 +134,9 @@ public sealed class EditorSession
         var pk = RequireCurrent();
         pk.FixMoves();
         pk.RefreshChecksum();
+        CurrentEntity = pk.Data.ToArray();
+        if (!_bound)
+            return;
         if (_partyOrigin)
             _sav.SetPartySlotAtIndex(pk, _originSlot);
         else
@@ -191,8 +198,20 @@ public sealed class EditorSession
     {
         _current = pk;
         _partyOrigin = party;
+        _bound = true;
         _originBox = box;
         _originSlot = slot;
+        MarkEntityClean();
+    }
+
+    public void LoadTemplate(string templatePath)
+    {
+        var pk = _sav.LoadTemplate(templatePath);
+        if (pk.Data.SequenceEqual(_sav.BlankPKM.Data))
+            EntityTemplates.TemplateFields(pk, _sav);
+        _current = pk;
+        _bound = false;
+        _partyOrigin = false;
         MarkEntityClean();
     }
 

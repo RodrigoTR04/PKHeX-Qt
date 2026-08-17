@@ -72,16 +72,44 @@ bool MainWindow::openPath(const QString &path)
     const bool ok = _editor.openPath(path);
     if (!ok)
         QMessageBox::warning(this, windowTitle(), tr("Could not open that save."));
+    syncSession();
+    return ok;
+}
+
+void MainWindow::syncSession()
+{
     updateExportEnabled();
     refreshStorage();
-    if (ok)
-    {
-        StorageLayout layout;
-        if (_editor.storageLayout(layout))
-            _editor.selectSlot(QStringLiteral("box:%1:0").arg(layout.currentBox));
+    if (_editor.hasSession())
         refreshPkmEditor();
-    }
+}
+
+bool MainWindow::applyStartup(const QStringList &args)
+{
+    const bool ok = _editor.applyStartup(args);
+    syncSession();
     return ok;
+}
+
+void MainWindow::promptBackupFolder()
+{
+    if (!_editor.takeBackupPrompt())
+        return;
+    const QString folder = _editor.backupDirectory();
+    const QString location = QStringLiteral(
+                                 "PKHeX can perform automatic backups if you create a folder with the name '%1' in the same folder as PKHeX's executable.")
+                                 .arg(folder);
+    if (!confirmYesNo(location, QStringLiteral("Would you like to create the backup folder now?")))
+        return;
+    if (!_editor.createBackupFolder())
+    {
+        QMessageBox::warning(this, windowTitle(), tr("Unable to create backup folder."));
+        return;
+    }
+    QMessageBox::information(
+        this,
+        windowTitle(),
+        tr("Backup folder created.") + QLatin1Char('\n') + folder);
 }
 
 bool MainWindow::savePath(const QString &path)
@@ -156,8 +184,8 @@ void MainWindow::onMenuExportBak()
 
 void MainWindow::updateExportEnabled()
 {
+    _ui->Menu_ExportSAV->setEnabled(_editor.isExportable());
     const bool open = _editor.hasSession();
-    _ui->Menu_ExportSAV->setEnabled(open);
     _ui->Menu_ShowdownImportPKM->setEnabled(open);
     _ui->Menu_ShowdownExportPKM->setEnabled(open);
     _ui->Menu_ShowdownExportParty->setEnabled(open);

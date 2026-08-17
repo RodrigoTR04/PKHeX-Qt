@@ -17,19 +17,23 @@ public sealed class EditorApp
     {
         ArgumentNullException.ThrowIfNull(config);
         Config = config;
+        DetectRoots = SaveDetect.DefaultRoots();
     }
 
     public UserConfig Config { get; }
     public EditorSession? Session { get; private set; }
+    public IReadOnlyList<string> DetectRoots { get; set; }
 
     public bool PathIsSave(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         return SaveUtil.TryGetSaveFile(path, out _);
     }
+
     public bool NeedsClosePrompt => Session?.NeedsClosePrompt == true;
     public bool NeedsOpenPrompt => Session?.NeedsOpenPrompt == true;
     public bool NeedsExportPrompt => Session?.NeedsExportPrompt(Config.CheckUnsavedEntityOnExport) == true;
+    public bool IsExportable => Session?.IsExportable == true;
 
     public void OpenFromPath(string path)
     {
@@ -37,8 +41,47 @@ public sealed class EditorApp
         var previous = Session;
         Session = EditorSession.OpenDropped(Session, path);
         if (!ReferenceEquals(previous, Session))
+        {
             TryBackupOnOpen();
+            if (Session.LoadedPath is { } loaded)
+                Config.RememberLoaded(loaded);
+            Session.LoadTemplate(Config.TemplateDirectory);
+        }
     }
+
+    public void TryStartup(IReadOnlyList<string> args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        string? cliSave = null;
+        string? cliEntity = null;
+        foreach (var arg in args)
+        {
+            if (string.IsNullOrWhiteSpace(arg) || !File.Exists(arg))
+                continue;
+            if (SaveUtil.TryGetSaveFile(arg, out _))
+                cliSave = arg;
+            else
+                cliEntity = arg;
+        }
+
+        if (cliSave is not null)
+            OpenFromPath(cliSave);
+        else
+            OpenAuto();
+
+        if (cliEntity is not null && Session is not null)
+            Session.ImportEntityFromPath(cliEntity);
+    }
+
+    public bool TakeBackupPrompt()
+    {
+        if (Config.AskedCreateBackupFolder)
+            return false;
+        Config.AskedCreateBackupFolder = true;
+        return !Directory.Exists(Config.BackupDirectory);
+    }
+
+    public void CreateBackupFolder() => Directory.CreateDirectory(Config.BackupDirectory);
 
     public void SaveToPath(string path)
     {
@@ -47,6 +90,7 @@ public sealed class EditorApp
         File.WriteAllBytes(path, session.Export());
         session.SetLoadedPath(path);
         session.MarkClean();
+        Config.RememberLoaded(path);
     }
 
     public void SaveEntityToPath(string path)
@@ -68,6 +112,46 @@ public sealed class EditorApp
     public string SuggestedBackupName => RequireSession().SuggestedBackupName;
 
     public void SaveConfig() => Config.Save();
+
+    private void OpenAuto()
+    {
+        switch (Config.AutoLoadSaveOnStartup)
+        {
+            case SaveFileLoadSetting.LastLoaded:
+                foreach (var path in Config.RecentlyLoaded)
+                {
+                    if (File.Exists(path) && PathIsSave(path))
+                    {
+                        OpenFromPath(path);
+                        return;
+                    }
+                }
+                OpenBlank();
+                return;
+            case SaveFileLoadSetting.RecentBackup:
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                {
+                    var detected = SaveDetect.Detect(DetectRoots, Config.OtherBackupPaths, cts.Token)
+                        .FirstOrDefault();
+                    if (detected?.Metadata.FilePath is { } path && File.Exists(path))
+                    {
+                        OpenFromPath(path);
+                        return;
+                    }
+                }
+                OpenBlank();
+                return;
+            default:
+                OpenBlank();
+                return;
+        }
+    }
+
+    private void OpenBlank()
+    {
+        Session = EditorSession.Blank(Config.DefaultSaveVersion);
+        Session.LoadTemplate(Config.TemplateDirectory);
+    }
 
     private void TryBackupOnOpen()
     {

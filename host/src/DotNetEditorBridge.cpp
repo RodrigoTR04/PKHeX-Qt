@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QString>
+#include <QStringList>
 #include <stdexcept>
 #include <string>
 
@@ -140,6 +141,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("ExportBackup", &_exportBackup);
     load("SaveEntityPath", &_saveEntityPath);
     load("PrepareBackupName", &_prepareBackupName);
+    load("ApplyStartup", &_applyStartup);
+    load("TakeBackupPrompt", &_takeBackupPrompt);
+    load("CreateBackupFolder", &_createBackupFolder);
+    load("IsExportable", &_isExportable);
+    load("PrepareBackupPath", &_prepareBackupPath);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -377,6 +383,37 @@ bool DotNetEditorBridge::saveEntityPath(const QString &path)
 QString DotNetEditorBridge::suggestedBackupName()
 {
     return readText(_prepareBackupName, QStringLiteral("-"));
+}
+
+bool DotNetEditorBridge::applyStartup(const QStringList &args)
+{
+    return call(_applyStartup, args.join(QLatin1Char('\n')));
+}
+
+bool DotNetEditorBridge::takeBackupPrompt()
+{
+    if (_takeBackupPrompt == nullptr)
+        return false;
+    return _takeBackupPrompt(nullptr, 0) == 1;
+}
+
+bool DotNetEditorBridge::createBackupFolder()
+{
+    if (_createBackupFolder == nullptr)
+        return false;
+    return _createBackupFolder(nullptr, 0) == 0;
+}
+
+bool DotNetEditorBridge::isExportable() const
+{
+    if (_isExportable == nullptr)
+        return false;
+    return _isExportable(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::backupDirectory()
+{
+    return readText(_prepareBackupPath, QStringLiteral("-"));
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

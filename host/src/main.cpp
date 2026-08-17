@@ -2,7 +2,9 @@
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QMessageBox>
+#include <QStringList>
 #include <exception>
 
 int main(int argc, char *argv[])
@@ -15,9 +17,12 @@ int main(int argc, char *argv[])
     {
         DotNetEditorBridge editor;
         MainWindow window(editor);
-        if (argc > 1)
-            window.openPath(QString::fromLocal8Bit(argv[1]));
+        QStringList args = QCoreApplication::arguments();
+        if (!args.isEmpty())
+            args.removeFirst();
+        window.applyStartup(args);
         window.show();
+        window.promptBackupFolder();
         return QApplication::exec();
     }
     catch (const std::exception &ex)

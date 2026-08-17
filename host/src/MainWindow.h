@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QPoint>
 #include <QString>
+#include <QStringList>
 #include <memory>
 
 class QCloseEvent;
@@ -30,6 +31,8 @@ public:
 
     bool openPath(const QString &path);
     bool savePath(const QString &path);
+    bool applyStartup(const QStringList &args);
+    void promptBackupFolder();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -81,6 +84,7 @@ private:
     bool confirmOpenSave();
     bool confirmExportSave();
     bool confirmClose();
+    void syncSession();
 
     EditorBridge &_editor;
     std::unique_ptr<Ui::MainWindow> _ui;

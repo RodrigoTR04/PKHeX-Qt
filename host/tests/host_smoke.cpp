@@ -206,6 +206,31 @@ public:
     {
         return QStringLiteral("named.sav.bak");
     }
+
+    bool applyStartup(const QStringList &) override
+    {
+        return false;
+    }
+
+    bool takeBackupPrompt() override
+    {
+        return false;
+    }
+
+    bool createBackupFolder() override
+    {
+        return true;
+    }
+
+    bool isExportable() const override
+    {
+        return session;
+    }
+
+    QString backupDirectory() override
+    {
+        return QStringLiteral("/tmp/pkhexqt-bak");
+    }
 };
 
 int main(int argc, char *argv[])

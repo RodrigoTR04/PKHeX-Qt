@@ -43,6 +43,11 @@ public:
     bool exportBackup(const QString &path) override;
     bool saveEntityPath(const QString &path) override;
     QString suggestedBackupName() override;
+    bool applyStartup(const QStringList &args) override;
+    bool takeBackupPrompt() override;
+    bool createBackupFolder() override;
+    bool isExportable() const override;
+    QString backupDirectory() override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -90,4 +95,9 @@ private:
     component_entry_point_fn _exportBackup{};
     component_entry_point_fn _saveEntityPath{};
     component_entry_point_fn _prepareBackupName{};
+    component_entry_point_fn _applyStartup{};
+    component_entry_point_fn _takeBackupPrompt{};
+    component_entry_point_fn _createBackupFolder{};
+    component_entry_point_fn _isExportable{};
+    component_entry_point_fn _prepareBackupPath{};
 };
