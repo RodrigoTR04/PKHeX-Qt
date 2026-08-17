@@ -58,10 +58,14 @@ set_target_properties(nethost PROPERTIES
 
 set(HOST_SOURCES
   src/MainWindow.cpp
+  src/LangCatalog.cpp
+  src/SavToolChrome.cpp
 )
 set(HOST_HEADERS
   src/MainWindow.h
   src/EditorBridge.h
+  src/LangCatalog.h
+  src/SavToolChrome.h
 )
 
 add_executable(pkhex-qt
@@ -87,6 +91,18 @@ add_executable(pkhex-qt-host-tests
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
 target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets)
+
+function(pkhexqt_copy_lang target)
+  add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/lang"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/assets/lang/lang_en.txt"
+      "$<TARGET_FILE_DIR:${target}>/lang/lang_en.txt"
+    VERBATIM)
+endfunction()
+
+pkhexqt_copy_lang(pkhex-qt)
+pkhexqt_copy_lang(pkhex-qt-host-tests)
 
 add_test(NAME host_title_cli_open_save COMMAND pkhex-qt-host-tests)
 set_tests_properties(host_title_cli_open_save PROPERTIES

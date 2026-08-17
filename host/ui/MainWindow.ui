@@ -2,44 +2,398 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="Main">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>640</width>
-    <height>400</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>PKHeX Qt</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menuStrip1">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>640</width>
-     <height>24</height>
-    </rect>
+  <widget class="QSplitter" name="splitContainer1">
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
    </property>
+   <widget class="QWidget" name="PKMPane">
+    <layout class="QVBoxLayout" name="PKMPaneLayout">
+     <property name="spacing">
+      <number>4</number>
+     </property>
+     <property name="leftMargin">
+      <number>4</number>
+     </property>
+     <property name="topMargin">
+      <number>4</number>
+     </property>
+     <property name="rightMargin">
+      <number>4</number>
+     </property>
+     <property name="bottomMargin">
+      <number>4</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="PKMHeaderLayout">
+       <item>
+        <widget class="QLabel" name="PB_Legal">
+         <property name="minimumSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="dragout">
+         <property name="minimumSize">
+          <size>
+           <width>72</width>
+           <height>56</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="PKMHeaderSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTabWidget" name="PKME_Tabs">
+       <property name="tabPosition">
+        <enum>QTabWidget::West</enum>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="Tab_Main">
+        <attribute name="title">
+         <string>Main</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_Met">
+        <attribute name="title">
+         <string>Met</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_Stats">
+        <attribute name="title">
+         <string>Stats</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_Moves">
+        <attribute name="title">
+         <string>Moves</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_Cosmetic">
+        <attribute name="title">
+         <string>Cosmetic</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_OTMisc">
+        <attribute name="title">
+         <string>OT/Misc</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="C_SAV">
+    <layout class="QVBoxLayout" name="C_SAVLayout">
+     <property name="leftMargin">
+      <number>4</number>
+     </property>
+     <property name="topMargin">
+      <number>4</number>
+     </property>
+     <property name="rightMargin">
+      <number>4</number>
+     </property>
+     <property name="bottomMargin">
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QTabWidget" name="tabBoxMulti">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="Tab_Box">
+        <attribute name="title">
+         <string>Box</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_PartyBattle">
+        <attribute name="title">
+         <string>Party</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_Other">
+        <attribute name="title">
+         <string>Other</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="Tab_SAV">
+        <attribute name="title">
+         <string>SAV</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="Tab_SAVLayout">
+         <item>
+          <layout class="QHBoxLayout" name="FLP_SAVToolsMisc">
+           <item>
+            <widget class="QPushButton" name="B_SaveBoxBin">
+             <property name="text">
+              <string>Save Box Data++</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="B_VerifyCHK">
+             <property name="text">
+              <string>Verify Checksums</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="B_VerifySaveEntities">
+             <property name="text">
+              <string>Verify All PKMs</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="Menu_ExportBAK">
+             <property name="text">
+              <string>Export Backup</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="B_JPEG">
+             <property name="text">
+              <string>Save PGL .JPEG</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="B_ConvertKorean">
+             <property name="text">
+              <string>Korean Save Conversion</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QScrollArea" name="SAVToolsScroll">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="FLP_SAVtools"/>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuStrip1">
    <widget class="QMenu" name="Menu_File">
     <property name="title">
      <string>&amp;File</string>
     </property>
     <addaction name="Menu_Open"/>
+    <addaction name="separator"/>
+    <addaction name="Menu_Save"/>
     <addaction name="Menu_ExportSAV"/>
+    <addaction name="separator"/>
+    <addaction name="Menu_Exit"/>
+   </widget>
+   <widget class="QMenu" name="Menu_Tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <widget class="QMenu" name="Menu_Showdown">
+     <property name="title">
+      <string>&amp;Showdown</string>
+     </property>
+     <addaction name="Menu_ShowdownImportPKM"/>
+     <addaction name="separator"/>
+     <addaction name="Menu_ShowdownExportPKM"/>
+     <addaction name="Menu_ShowdownExportParty"/>
+     <addaction name="Menu_ShowdownExportCurrentBox"/>
+    </widget>
+    <widget class="QMenu" name="Menu_Data">
+     <property name="title">
+      <string>&amp;Data</string>
+     </property>
+     <addaction name="Menu_LoadBoxes"/>
+     <addaction name="Menu_DumpBoxes"/>
+     <addaction name="Menu_DumpBox"/>
+     <addaction name="separator"/>
+     <addaction name="Menu_Report"/>
+     <addaction name="separator"/>
+     <addaction name="Menu_Database"/>
+     <addaction name="Menu_MGDatabase"/>
+     <addaction name="Menu_EncDatabase"/>
+     <addaction name="separator"/>
+     <addaction name="Menu_BatchEditor"/>
+    </widget>
+    <addaction name="Menu_Showdown"/>
+    <addaction name="Menu_Data"/>
+    <addaction name="separator"/>
+    <addaction name="Menu_Folder"/>
+   </widget>
+   <widget class="QMenu" name="Menu_Options">
+    <property name="title">
+     <string>&amp;Options</string>
+    </property>
+    <addaction name="Menu_Language"/>
+    <addaction name="separator"/>
+    <addaction name="Menu_Undo"/>
+    <addaction name="Menu_Redo"/>
+    <addaction name="separator"/>
+    <addaction name="Menu_Settings"/>
+    <addaction name="Menu_About"/>
    </widget>
    <addaction name="Menu_File"/>
+   <addaction name="Menu_Tools"/>
+   <addaction name="Menu_Options"/>
   </widget>
   <action name="Menu_Open">
    <property name="text">
     <string>&amp;Open...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="Menu_Save">
+   <property name="text">
+    <string>&amp;Save PKM...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="Menu_ExportSAV">
    <property name="text">
     <string>&amp;Export SAV...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="Menu_Exit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="Menu_ShowdownImportPKM">
+   <property name="text">
+    <string>&amp;Import Set from Clipboard</string>
+   </property>
+  </action>
+  <action name="Menu_ShowdownExportPKM">
+   <property name="text">
+    <string>&amp;Export Set to Clipboard</string>
+   </property>
+  </action>
+  <action name="Menu_ShowdownExportParty">
+   <property name="text">
+    <string>Export &amp;Party to Clipboard</string>
+   </property>
+  </action>
+  <action name="Menu_ShowdownExportCurrentBox">
+   <property name="text">
+    <string>Export Current &amp;Box to Clipboard</string>
+   </property>
+  </action>
+  <action name="Menu_LoadBoxes">
+   <property name="text">
+    <string>&amp;Load Boxes</string>
+   </property>
+  </action>
+  <action name="Menu_DumpBoxes">
+   <property name="text">
+    <string>Dump Bo&amp;xes</string>
+   </property>
+  </action>
+  <action name="Menu_DumpBox">
+   <property name="text">
+    <string>Dump Bo&amp;x</string>
+   </property>
+  </action>
+  <action name="Menu_Report">
+   <property name="text">
+    <string>Box Data &amp;Report</string>
+   </property>
+  </action>
+  <action name="Menu_Database">
+   <property name="text">
+    <string>PKM &amp;Database</string>
+   </property>
+  </action>
+  <action name="Menu_MGDatabase">
+   <property name="text">
+    <string>Mystery &amp;Gift Database</string>
+   </property>
+  </action>
+  <action name="Menu_EncDatabase">
+   <property name="text">
+    <string>E&amp;ncounter Database</string>
+   </property>
+  </action>
+  <action name="Menu_BatchEditor">
+   <property name="text">
+    <string>&amp;Batch Editor</string>
+   </property>
+  </action>
+  <action name="Menu_Folder">
+   <property name="text">
+    <string>Open &amp;Folder</string>
+   </property>
+  </action>
+  <action name="Menu_Language">
+   <property name="text">
+    <string>&amp;Language</string>
+   </property>
+  </action>
+  <action name="Menu_Undo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Undo Last Change</string>
+   </property>
+  </action>
+  <action name="Menu_Redo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Redo Last Change</string>
+   </property>
+  </action>
+  <action name="Menu_Settings">
+   <property name="text">
+    <string>&amp;Settings</string>
+   </property>
+  </action>
+  <action name="Menu_About">
+   <property name="text">
+    <string>&amp;About PKHeX</string>
    </property>
   </action>
  </widget>

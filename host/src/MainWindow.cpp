@@ -1,10 +1,15 @@
 #include "MainWindow.h"
 
 #include "EditorBridge.h"
+#include "LangCatalog.h"
+#include "SavToolChrome.h"
 #include "ui_MainWindow.h"
 
+#include <QCoreApplication>
+#include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QWidget>
 
 MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     : QMainWindow(parent)
@@ -12,10 +17,13 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     , _ui(std::make_unique<Ui::MainWindow>())
 {
     _ui->setupUi(this);
+    fillSavChrome();
+    applyEnglishStrings();
     setWindowTitle(QStringLiteral("PKHeX Qt"));
 
     connect(_ui->Menu_Open, &QAction::triggered, this, &MainWindow::onMenuOpen);
     connect(_ui->Menu_ExportSAV, &QAction::triggered, this, &MainWindow::onMenuExportSav);
+    connect(_ui->Menu_Exit, &QAction::triggered, this, &MainWindow::onMenuExit);
     updateExportEnabled();
 }
 
@@ -68,4 +76,23 @@ void MainWindow::onMenuExportSav()
 void MainWindow::updateExportEnabled()
 {
     _ui->Menu_ExportSAV->setEnabled(_editor.hasSession());
+}
+
+void MainWindow::onMenuExit()
+{
+    close();
+}
+
+void MainWindow::fillSavChrome()
+{
+    fillSavToolButtons(findChild<QWidget *>(QStringLiteral("FLP_SAVtools")));
+}
+
+void MainWindow::applyEnglishStrings()
+{
+    const QString path = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt"));
+    LangCatalog catalog;
+    if (!catalog.loadFromFile(path))
+        return;
+    catalog.apply(this, QStringLiteral("Main"));
 }

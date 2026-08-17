@@ -24,9 +24,12 @@ public:
 private slots:
     void onMenuOpen();
     void onMenuExportSav();
+    void onMenuExit();
 
 private:
     void updateExportEnabled();
+    void applyEnglishStrings();
+    void fillSavChrome();
 
     EditorBridge &_editor;
     std::unique_ptr<Ui::MainWindow> _ui;
