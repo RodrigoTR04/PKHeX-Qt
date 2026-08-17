@@ -9,8 +9,12 @@ The application this repository is building. It is not an upstream contribution 
 _Avoid_: official PKHeX, PKHeX WinForms, calling this product PKHeX Online, using Original PKHeX's version as ours
 
 **PKHeX Online**:
-The sibling browser port at `Documents/Projects/PKHeX-online`. It is a different product. Presentation choices may be borrowed from it. This repo is not that app.
+The sibling browser port at `Documents/Projects/PKHeX-online`. It is a different product. We do not share code with it. Its UI catalogs are the Field reference for Host forms.
 _Avoid_: the web app, PKHeX Qt (when you mean the browser port)
+
+**Field reference**:
+PKHeX Online's `docs/ui/` catalogs, used when choosing Qt control kinds (table, dropdown, checkbox, modal) and which submenu or tab a fact belongs in. Not a source of Byte parity, not a source of `.ui` object names, not code to copy. Pipeline: `docs/ui/online-field-reference.md` in this repo.
+_Avoid_: copying Online, web layout, screenshot parity with the browser app
 
 **Original PKHeX**:
 The Windows PKHeX application we are matching, currently snapshotted as the read-only tree `PKHeX-26.07.07`.
@@ -41,7 +45,7 @@ PKHeX Qt's own settings file in the OS per-user config directory. Not Original P
 _Avoid_: AppData (when you mean the Linux/macOS path too), ini beside the binary
 
 **Accuracy**:
-Same edits, same legality outcomes, same shortcuts, same dialogs, and a layout that follows the WinForms forms closely. Native Qt widgets, Qt layouts, native file dialogs, and platform window chrome are allowed. Slots scale with the form and stay sharp. Clipboard Pokémon formats match Original PKHeX. Species and item images use Artwork sprites with Original PKHeX artwork-builder overlays, including box wallpapers. Nickname fields use the same in-game font Original PKHeX embeds. Cries play from an optional local Sounds directory. Startup language follows Original PKHeX (User config, OS locale default). The app follows the OS color scheme. HaX is out of v1. Windows and macOS Releases are unsigned.
+Same edits, same legality outcomes, same shortcuts, same dialogs. Control names match Original PKHeX. Field kinds and submenu placement follow the Field reference (PKHeX Online catalogs), then Qt layouts. Native Qt widgets, native file dialogs, and platform window chrome are allowed. Slots scale with the form and stay sharp. Clipboard Pokémon formats match Original PKHeX. Species and item images use Artwork sprites with Original PKHeX artwork-builder overlays, including box wallpapers. Nickname fields use the same in-game font Original PKHeX embeds. Cries play from an optional local Sounds directory. Startup language follows Original PKHeX (User config, OS locale default). The app follows the OS color scheme. HaX is out of v1. Windows and macOS Releases are unsigned.
 _Avoid_: pixel-perfect, feature parity (when you mean a redesigned UI), lookalike, DarkMode setting
 
 **v1**:

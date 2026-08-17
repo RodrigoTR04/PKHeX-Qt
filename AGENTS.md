@@ -15,9 +15,13 @@ The following is a letter from me to you, the agent. We are building this togeth
 This is meant to be a bold project. Going with the flow and existing solutions will not get us where we want to be.
 Quick glossary of relevant parties in this document:
 
-* *you* - the agent reading this document and working on PKHeX Online directly.
-* *me/we/us* - the humans contributing to PKHeX Online. This is the party talking to you as we build.
+* *you* - the agent reading this document and working on PKHeX Qt.
+* *me/we/us* - the humans contributing to PKHeX Qt. This is the party talking to you as we build.
 * *user* - the humans using the application.
+
+## GUI field kinds and submenus
+
+When placing tables, dropdowns, and other fields, follow `docs/ui/online-field-reference.md`. That pipeline reads PKHeX Online's UI catalogs as a baseline for control kind and submenu membership. Do not copy Online code. Byte parity and WinForms control names still come from the Oracle.
 
 ## Use of subagents
 
