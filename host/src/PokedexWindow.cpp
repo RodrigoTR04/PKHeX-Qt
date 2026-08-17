@@ -82,7 +82,7 @@ void PokedexWindow::applyCapabilities()
     const bool spinda = root.value(QStringLiteral("hasSpinda")).toBool();
     const int langs = root.value(QStringLiteral("languageCount")).toInt(7);
     _ui->CHK_NationalDexUnlocked->setVisible(national);
-    _ui->CHK_NationalDexActive->setVisible(national);
+    _ui->CHK_NationalDexActive->setVisible(national && _langForm != QStringLiteral("SAV_PokedexBDSP"));
     _ui->L_Spinda->setVisible(spinda);
     _ui->TB_PID->setVisible(spinda);
     _ui->CHK_L8->setVisible(langs >= 8);
