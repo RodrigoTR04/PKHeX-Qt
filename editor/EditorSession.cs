@@ -41,6 +41,18 @@ public sealed class EditorSession
         return new EditorSession(sav);
     }
 
+    public static EditorSession OpenDropped(EditorSession? current, string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        var bytes = File.ReadAllBytes(path);
+        if (SaveUtil.TryGetSaveFile(bytes, out _))
+            return Load(bytes);
+        if (current is null)
+            throw new InvalidDataException("Unrecognized save file.");
+        current.ImportEntityFromPath(path);
+        return current;
+    }
+
     public void Register(string name, Action<SaveFile> operation)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -193,24 +205,80 @@ public sealed class EditorSession
     public string EntityFileName => RequireCurrent().FileName;
 
     public void ImportEntity(ReadOnlyMemory<byte> data, string extension = "")
+        => ImportConverted(ConvertIncoming(data, extension));
+
+    private static ShowdownSet FirstSet(string text)
+        => BattleTemplateTeams.TryGetSets(text).FirstOrDefault() ?? new ShowdownSet(string.Empty);
+
+    public void DropEntityOnSlot(bool party, int box, int slot, ReadOnlyMemory<byte> data, string extension = "")
+        => WriteToSlot(ConvertIncoming(data, extension), party, box, slot);
+
+    public void WriteCurrentToSlot(bool party, int box, int slot)
+        => WriteToSlot(RequireCurrent().Clone(), party, box, slot);
+
+    public void DeleteSlot(bool party, int box, int slot)
+        => WriteToSlot(_sav.BlankPKM, party, box, slot);
+
+    public void SwapSlots(bool partyA, int boxA, int slotA, bool partyB, int boxB, int slotB)
+    {
+        var a = ReadSlot(partyA, boxA, slotA).Clone();
+        var b = ReadSlot(partyB, boxB, slotB).Clone();
+        WriteToSlot(b, partyA, boxA, slotA);
+        WriteToSlot(a, partyB, boxB, slotB);
+    }
+
+    public string SlotPreview(bool party, int box, int slot)
+    {
+        var pk = ReadSlot(party, box, slot);
+        if (pk.Species == 0)
+            return string.Empty;
+        return ShowdownParsing.GetLocalizedPreviewText(pk, BattleTemplateExportSettings.Showdown);
+    }
+
+    public void ImportEntityFromPath(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        var pk = FileUtil.GetSingleFromPath(path, _sav)
+            ?? throw new InvalidDataException("Unrecognized Pokémon file.");
+        ImportConverted(pk);
+    }
+
+    private PKM ReadSlot(bool party, int box, int slot)
+        => party ? _sav.GetPartySlotAtIndex(slot) : _sav.GetBoxSlotAtIndex(box, slot);
+
+    private void WriteToSlot(PKM pk, bool party, int box, int slot)
+    {
+        pk.FixMoves();
+        pk.RefreshChecksum();
+        if (party)
+            _sav.SetPartySlotAtIndex(pk, slot);
+        else
+            _sav.SetBoxSlotAtIndex(pk, box, slot);
+    }
+
+    private PKM ConvertIncoming(ReadOnlyMemory<byte> data, string extension)
     {
         if (data.Length == 0)
             throw new InvalidDataException("Entity data was empty.");
-        var ext = string.IsNullOrEmpty(extension) ? $".{RequireCurrent().Extension}" : extension;
+        var ext = string.IsNullOrEmpty(extension) ? $".{(_current?.Extension ?? "pk5")}" : extension;
         if (!FileUtil.TryGetPKM(data.ToArray(), out var pk, ext, _sav))
         {
             pk = EntityFormat.GetFromBytes(data.ToArray());
             if (pk is null)
                 throw new InvalidDataException("Unrecognized Pokémon file.");
         }
-        var destType = _sav.PKMType;
-        var converted = EntityConverter.ConvertToType(pk, destType, out _)
+        return ConvertToSave(pk);
+    }
+
+    private void ImportConverted(PKM pk)
+        => LoadCurrent(ConvertToSave(pk), _partyOrigin, _originBox, _originSlot);
+
+    private PKM ConvertToSave(PKM pk)
+    {
+        var converted = EntityConverter.ConvertToType(pk, _sav.PKMType, out _)
             ?? throw new InvalidDataException("Could not convert that Pokémon to this save.");
         if (ReferenceEquals(pk, converted))
             _sav.AdaptToSaveFile(converted);
-        LoadCurrent(converted, _partyOrigin, _originBox, _originSlot);
+        return converted;
     }
-
-    private static ShowdownSet FirstSet(string text)
-        => BattleTemplateTeams.TryGetSets(text).FirstOrDefault() ?? new ShowdownSet(string.Empty);
 }

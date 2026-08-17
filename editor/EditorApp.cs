@@ -11,7 +11,7 @@ public sealed class EditorApp
     public void OpenFromPath(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
-        Session = EditorSession.Load(File.ReadAllBytes(path));
+        Session = EditorSession.OpenDropped(Session, path);
     }
 
     public void SaveToPath(string path)

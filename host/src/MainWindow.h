@@ -3,9 +3,16 @@
 #include "EditorBridge.h"
 
 #include <QMainWindow>
+#include <QPoint>
+#include <QString>
 #include <memory>
 
+class QDragEnterEvent;
+class QDropEvent;
 class QKeyEvent;
+class QLabel;
+class QMimeData;
+class QMouseEvent;
 
 namespace Ui
 {
@@ -26,10 +33,13 @@ public:
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
 private slots:
     void onMenuOpen();
     void onMenuExportSav();
+    void onMenuSavePkm();
     void onMenuExit();
     void onBoxSelected(int index);
     void onBoxLeft();
@@ -60,8 +70,15 @@ private:
     void copyEntityToClipboard();
     void pasteEntityFromClipboard();
     bool textWidgetHasFocus() const;
+    bool handleSlotMouse(QObject *watched, QEvent *event);
+    void startSlotDrag(QLabel *slot, const QString &key);
+    void applyDrop(QDropEvent *event, const QString &destKey);
+    QByteArray entityBytesFromMime(const QMimeData *mime) const;
 
     EditorBridge &_editor;
     std::unique_ptr<Ui::MainWindow> _ui;
     bool _pkmBusy = false;
+    QPoint _pressPos;
+    QString _pressKey;
+    bool _dragging = false;
 };

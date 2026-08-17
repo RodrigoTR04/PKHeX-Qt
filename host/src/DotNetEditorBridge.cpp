@@ -127,6 +127,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PrepareEntityCopy", &_prepareEntityCopy);
     load("PrepareEntityFileName", &_prepareEntityFileName);
     load("ImportEntity", &_importEntity);
+    load("SlotPreview", &_slotPreview);
+    load("WriteCurrentToSlot", &_writeCurrentToSlot);
+    load("DeleteSlot", &_deleteSlot);
+    load("SwapSlots", &_swapSlots);
+    load("DropOnSlot", &_dropOnSlot);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -283,6 +288,36 @@ bool DotNetEditorBridge::importEntity(const QByteArray &data)
     if (_importEntity == nullptr || data.isEmpty())
         return false;
     return _importEntity(const_cast<void *>(static_cast<const void *>(data.constData())), data.size()) == 0;
+}
+
+QString DotNetEditorBridge::slotPreview(const QString &key)
+{
+    return readText(_slotPreview, key);
+}
+
+bool DotNetEditorBridge::writeCurrentToSlot(const QString &key)
+{
+    return call(_writeCurrentToSlot, key);
+}
+
+bool DotNetEditorBridge::deleteSlot(const QString &key)
+{
+    return call(_deleteSlot, key);
+}
+
+bool DotNetEditorBridge::swapSlots(const QString &source, const QString &destination)
+{
+    return call(_swapSlots, source + QLatin1Char('|') + destination);
+}
+
+bool DotNetEditorBridge::dropOnSlot(const QString &key, const QByteArray &data)
+{
+    if (_dropOnSlot == nullptr || data.isEmpty())
+        return false;
+    QByteArray payload = key.toUtf8();
+    payload.append('\0');
+    payload.append(data);
+    return _dropOnSlot(payload.data(), payload.size()) == 0;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

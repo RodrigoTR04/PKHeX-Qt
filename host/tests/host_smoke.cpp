@@ -29,6 +29,10 @@ public:
     QString lastSaved;
     QString lastSelect;
     int lastBox = -1;
+    QString lastWrite;
+    QString lastDelete;
+    QString lastSwap;
+    QString lastDrop;
     bool session = false;
 
     bool openPath(const QString &path) override
@@ -131,6 +135,35 @@ public:
 
     bool importEntity(const QByteArray &) override
     {
+        return true;
+    }
+
+    QString slotPreview(const QString &key) override
+    {
+        return QStringLiteral("preview:") + key;
+    }
+
+    bool writeCurrentToSlot(const QString &key) override
+    {
+        lastWrite = key;
+        return true;
+    }
+
+    bool deleteSlot(const QString &key) override
+    {
+        lastDelete = key;
+        return true;
+    }
+
+    bool swapSlots(const QString &source, const QString &destination) override
+    {
+        lastSwap = source + QLatin1Char('|') + destination;
+        return true;
+    }
+
+    bool dropOnSlot(const QString &key, const QByteArray &) override
+    {
+        lastDrop = key;
         return true;
     }
 };
@@ -288,6 +321,46 @@ int main(int argc, char *argv[])
         std::cerr << "entity clipboard mime missing\n";
         return 26;
     }
+
+    if (!window.acceptDrops() || !slot->acceptDrops())
+        return 27;
+
+    QEvent enter(QEvent::Enter);
+    QCoreApplication::sendEvent(slot, &enter);
+    if (!slot->toolTip().startsWith(QLatin1String("preview:")))
+    {
+        std::cerr << "tooltip was " << slot->toolTip().toStdString() << "\n";
+        return 28;
+    }
+
+    QMouseEvent shiftPress(
+        QEvent::MouseButtonPress,
+        QPointF(1, 1),
+        QPointF(1, 1),
+        Qt::LeftButton,
+        Qt::LeftButton,
+        Qt::ShiftModifier);
+    QCoreApplication::sendEvent(slot, &shiftPress);
+    if (editor.lastWrite != QLatin1String("box:0:0"))
+    {
+        std::cerr << "shift-set was " << editor.lastWrite.toStdString() << "\n";
+        return 29;
+    }
+
+    QMouseEvent altPress(
+        QEvent::MouseButtonPress,
+        QPointF(1, 1),
+        QPointF(1, 1),
+        Qt::LeftButton,
+        Qt::LeftButton,
+        Qt::AltModifier);
+    QCoreApplication::sendEvent(slot, &altPress);
+    if (editor.lastDelete != QLatin1String("box:0:0"))
+        return 30;
+
+    auto *savePkm = window.findChild<QAction *>(QStringLiteral("Menu_Save"));
+    if (savePkm == nullptr || savePkm->shortcut() != QKeySequence(QStringLiteral("Ctrl+S")))
+        return 31;
 
     return 0;
 }

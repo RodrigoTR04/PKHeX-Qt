@@ -320,6 +320,90 @@ public static class NativeExports
         }
     }
 
+    public static int SlotPreview(IntPtr arg, int size)
+    {
+        try
+        {
+            ParseSlotKey(ReadUtf8(arg, size), out var party, out var box, out var slot);
+            _preparedText = RequireSession().SlotPreview(party, box, slot);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int WriteCurrentToSlot(IntPtr arg, int size)
+    {
+        try
+        {
+            ParseSlotKey(ReadUtf8(arg, size), out var party, out var box, out var slot);
+            RequireSession().WriteCurrentToSlot(party, box, slot);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int DeleteSlot(IntPtr arg, int size)
+    {
+        try
+        {
+            ParseSlotKey(ReadUtf8(arg, size), out var party, out var box, out var slot);
+            RequireSession().DeleteSlot(party, box, slot);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int SwapSlots(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8(arg, size);
+            var split = raw.IndexOf('|');
+            if (split <= 0)
+                return 1;
+            ParseSlotKey(raw[..split], out var partyA, out var boxA, out var slotA);
+            ParseSlotKey(raw[(split + 1)..], out var partyB, out var boxB, out var slotB);
+            RequireSession().SwapSlots(partyA, boxA, slotA, partyB, boxB, slotB);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int DropOnSlot(IntPtr arg, int size)
+    {
+        try
+        {
+            if (arg == IntPtr.Zero || size <= 0)
+                return 1;
+            var payload = new byte[size];
+            Marshal.Copy(arg, payload, 0, size);
+            var zero = Array.IndexOf(payload, (byte)0);
+            if (zero <= 0 || zero >= payload.Length - 1)
+                return 1;
+            var key = System.Text.Encoding.UTF8.GetString(payload, 0, zero);
+            ParseSlotKey(key, out var party, out var box, out var slot);
+            RequireSession().DropEntityOnSlot(party, box, slot, payload.AsMemory(zero + 1));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 

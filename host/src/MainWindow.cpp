@@ -8,6 +8,7 @@
 #include "ui_MainWindow.h"
 
 #include <QAbstractSpinBox>
+#include <QApplication>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QComboBox>
@@ -15,6 +16,9 @@
 #include <QDate>
 #include <QDateEdit>
 #include <QDir>
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QEvent>
 #include <QFile>
 #include <QFileDialog>
@@ -44,9 +48,11 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     applyEnglishStrings();
     applyInGameFont(this);
     setWindowTitle(QStringLiteral("PKHeX Qt"));
+    setAcceptDrops(true);
 
     connect(_ui->Menu_Open, &QAction::triggered, this, &MainWindow::onMenuOpen);
     connect(_ui->Menu_ExportSAV, &QAction::triggered, this, &MainWindow::onMenuExportSav);
+    connect(_ui->Menu_Save, &QAction::triggered, this, &MainWindow::onMenuSavePkm);
     connect(_ui->Menu_Exit, &QAction::triggered, this, &MainWindow::onMenuExit);
     connect(_ui->Menu_ShowdownImportPKM, &QAction::triggered, this, &MainWindow::onShowdownImport);
     connect(_ui->Menu_ShowdownExportPKM, &QAction::triggered, this, &MainWindow::onShowdownExportPkm);
@@ -109,6 +115,25 @@ void MainWindow::onMenuExportSav()
     savePath(path);
 }
 
+void MainWindow::onMenuSavePkm()
+{
+    if (!_editor.hasSession())
+        return;
+    const QByteArray data = _editor.exportEntity();
+    if (data.isEmpty())
+        return;
+    const QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Save PKM"),
+        _editor.entityFileName(),
+        tr("All Files (*)"));
+    if (path.isEmpty())
+        return;
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate) || file.write(data) != data.size())
+        QMessageBox::warning(this, windowTitle(), tr("Could not export that Pokémon."));
+}
+
 void MainWindow::updateExportEnabled()
 {
     const bool open = _editor.hasSession();
@@ -139,7 +164,10 @@ void MainWindow::fillSlotChrome()
     for (auto *slot : slotLabels)
     {
         if (!slot->property("slotKey").toString().isEmpty())
+        {
             slot->installEventFilter(this);
+            slot->setAcceptDrops(true);
+        }
     }
 
     auto *select = findChild<QComboBox *>(QStringLiteral("CB_BoxSelect"));
@@ -151,6 +179,9 @@ void MainWindow::fillSlotChrome()
         connect(left, &QPushButton::clicked, this, &MainWindow::onBoxLeft);
     if (right != nullptr)
         connect(right, &QPushButton::clicked, this, &MainWindow::onBoxRight);
+
+    if (auto *dragout = findChild<QLabel *>(QStringLiteral("dragout")))
+        dragout->installEventFilter(this);
 }
 
 void MainWindow::onBoxSelected(int index)
@@ -169,6 +200,11 @@ void MainWindow::onBoxLeft()
     auto *select = findChild<QComboBox *>(QStringLiteral("CB_BoxSelect"));
     if (select == nullptr || select->count() == 0)
         return;
+    if (QApplication::keyboardModifiers() & Qt::ControlModifier)
+    {
+        select->setCurrentIndex(0);
+        return;
+    }
     const int next = (select->currentIndex() + select->count() - 1) % select->count();
     select->setCurrentIndex(next);
 }
@@ -178,6 +214,11 @@ void MainWindow::onBoxRight()
     auto *select = findChild<QComboBox *>(QStringLiteral("CB_BoxSelect"));
     if (select == nullptr || select->count() == 0)
         return;
+    if (QApplication::keyboardModifiers() & Qt::ControlModifier)
+    {
+        select->setCurrentIndex(select->count() - 1);
+        return;
+    }
     const int next = (select->currentIndex() + 1) % select->count();
     select->setCurrentIndex(next);
 }
@@ -475,23 +516,15 @@ void MainWindow::applyFieldValue(const QString &name, const QString &value)
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+    if (handleSlotMouse(watched, event))
+        return true;
     if (event->type() == QEvent::MouseButtonPress)
     {
         const auto *mouse = static_cast<QMouseEvent *>(event);
-        if (mouse->button() == Qt::LeftButton)
+        if (mouse->button() == Qt::LeftButton && watched->property("legalityIcon").toBool())
         {
-            if (watched->property("legalityIcon").toBool())
-            {
-                onLegalityClicked();
-                return true;
-            }
-            const QString key = watched->property("slotKey").toString();
-            if (!key.isEmpty())
-            {
-                _editor.selectSlot(key);
-                refreshPkmEditor();
-                return true;
-            }
+            onLegalityClicked();
+            return true;
         }
     }
     return QMainWindow::eventFilter(watched, event);
@@ -500,6 +533,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 namespace
 {
 constexpr auto kEntityMime = "application/x-pkhex-pokemon";
+constexpr auto kSlotMime = "application/x-pkhex-slot";
 }
 
 void MainWindow::onShowdownImport()
@@ -645,4 +679,189 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         }
     }
     QMainWindow::keyPressEvent(event);
+}
+
+bool MainWindow::handleSlotMouse(QObject *watched, QEvent *event)
+{
+    const QString key = watched->property("slotKey").toString();
+    const bool dragout = watched->objectName() == QLatin1String("dragout");
+    if (key.isEmpty() && !dragout)
+        return false;
+
+    switch (event->type())
+    {
+    case QEvent::Enter:
+        if (!key.isEmpty() && _editor.hasSession())
+            static_cast<QWidget *>(watched)->setToolTip(_editor.slotPreview(key));
+        return false;
+    case QEvent::DragEnter:
+    case QEvent::DragMove:
+    {
+        auto *drag = static_cast<QDropEvent *>(event);
+        const auto *mime = drag->mimeData();
+        if (mime != nullptr
+            && (mime->hasUrls() || mime->hasFormat(QString::fromLatin1(kEntityMime))
+                || mime->hasFormat(QString::fromLatin1(kSlotMime))))
+        {
+            drag->acceptProposedAction();
+            return true;
+        }
+        return false;
+    }
+    case QEvent::Drop:
+        applyDrop(static_cast<QDropEvent *>(event), key);
+        return true;
+    case QEvent::MouseButtonPress:
+    {
+        const auto *mouse = static_cast<QMouseEvent *>(event);
+        if (mouse->button() != Qt::LeftButton)
+            return false;
+        _pressPos = mouse->globalPosition().toPoint();
+        _pressKey = dragout ? QString() : key;
+        _dragging = false;
+        if (dragout)
+            return false;
+        const auto mods = mouse->modifiers();
+        if (mods & Qt::AltModifier)
+        {
+            _editor.deleteSlot(key);
+            refreshStorage();
+            refreshPkmEditor();
+            return true;
+        }
+        if (mods & Qt::ShiftModifier)
+        {
+            _editor.writeCurrentToSlot(key);
+            refreshStorage();
+            return true;
+        }
+        _editor.selectSlot(key);
+        refreshPkmEditor();
+        return true;
+    }
+    case QEvent::MouseMove:
+    {
+        const auto *mouse = static_cast<QMouseEvent *>(event);
+        if (!(mouse->buttons() & Qt::LeftButton) || _dragging)
+            return false;
+        if ((_pressPos - mouse->globalPosition().toPoint()).manhattanLength() < QApplication::startDragDistance())
+            return false;
+        auto *slot = qobject_cast<QLabel *>(watched);
+        if (slot == nullptr)
+            return false;
+        startSlotDrag(slot, _pressKey);
+        return true;
+    }
+    default:
+        return false;
+    }
+}
+
+void MainWindow::startSlotDrag(QLabel *slot, const QString &key)
+{
+    if (!_editor.hasSession())
+        return;
+    if (!key.isEmpty())
+        _editor.selectSlot(key);
+    const QByteArray data = _editor.exportEntity();
+    if (data.isEmpty())
+        return;
+    _dragging = true;
+    auto *mime = new QMimeData();
+    mime->setData(QString::fromLatin1(kEntityMime), data);
+    if (!key.isEmpty())
+        mime->setData(QString::fromLatin1(kSlotMime), key.toUtf8());
+    const QString name = _editor.entityFileName();
+    if (!name.isEmpty())
+    {
+        const QString path = QDir::temp().filePath(name);
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            file.write(data);
+            file.close();
+            mime->setUrls({QUrl::fromLocalFile(path)});
+        }
+    }
+    QDrag drag(this);
+    drag.setMimeData(mime);
+    if (!slot->pixmap().isNull())
+    {
+        drag.setPixmap(slot->pixmap());
+        drag.setHotSpot(slot->pixmap().rect().center());
+    }
+    drag.exec(Qt::CopyAction | Qt::MoveAction);
+    _dragging = false;
+    refreshStorage();
+    refreshPkmEditor();
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    const auto *mime = event->mimeData();
+    if (mime != nullptr && (mime->hasUrls() || mime->hasFormat(QString::fromLatin1(kEntityMime))))
+        event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    applyDrop(event, {});
+}
+
+void MainWindow::applyDrop(QDropEvent *event, const QString &destKey)
+{
+    const auto *mime = event->mimeData();
+    if (mime == nullptr)
+        return;
+
+    if (!destKey.isEmpty() && mime->hasFormat(QString::fromLatin1(kSlotMime)))
+    {
+        const QString source = QString::fromUtf8(mime->data(QString::fromLatin1(kSlotMime)));
+        if (!source.isEmpty() && source != destKey)
+        {
+            _editor.swapSlots(source, destKey);
+            event->acceptProposedAction();
+            refreshStorage();
+            refreshPkmEditor();
+            return;
+        }
+    }
+
+    if (!destKey.isEmpty())
+    {
+        const QByteArray data = entityBytesFromMime(mime);
+        if (!data.isEmpty() && _editor.dropOnSlot(destKey, data))
+        {
+            event->acceptProposedAction();
+            refreshStorage();
+            refreshPkmEditor();
+        }
+        return;
+    }
+
+    if (mime->hasUrls() && !mime->urls().isEmpty())
+    {
+        const QString path = mime->urls().front().toLocalFile();
+        if (!path.isEmpty())
+        {
+            openPath(path);
+            event->acceptProposedAction();
+        }
+    }
+}
+
+QByteArray MainWindow::entityBytesFromMime(const QMimeData *mime) const
+{
+    if (mime->hasFormat(QString::fromLatin1(kEntityMime)))
+        return mime->data(QString::fromLatin1(kEntityMime));
+    for (const auto &url : mime->urls())
+    {
+        const QString path = url.toLocalFile();
+        if (path.isEmpty())
+            continue;
+        QFile file(path);
+        if (file.open(QIODevice::ReadOnly))
+            return file.readAll();
+    }
+    return {};
 }

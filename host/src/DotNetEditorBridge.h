@@ -30,6 +30,11 @@ public:
     QByteArray exportEntity() override;
     QString entityFileName() override;
     bool importEntity(const QByteArray &data) override;
+    QString slotPreview(const QString &key) override;
+    bool writeCurrentToSlot(const QString &key) override;
+    bool deleteSlot(const QString &key) override;
+    bool swapSlots(const QString &source, const QString &destination) override;
+    bool dropOnSlot(const QString &key, const QByteArray &data) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -64,4 +69,9 @@ private:
     component_entry_point_fn _prepareEntityCopy{};
     component_entry_point_fn _prepareEntityFileName{};
     component_entry_point_fn _importEntity{};
+    component_entry_point_fn _slotPreview{};
+    component_entry_point_fn _writeCurrentToSlot{};
+    component_entry_point_fn _deleteSlot{};
+    component_entry_point_fn _swapSlots{};
+    component_entry_point_fn _dropOnSlot{};
 };
