@@ -1055,6 +1055,56 @@ public static class NativeExports
         }
     }
 
+    public static int PreparePkmDatabase(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            var session = RequireSession();
+            session.OpenPkmDatabase(PkmDatabaseOptions.FromConfig(App.Config));
+            var hits = session.SearchPkmDatabase(new PkmDatabaseQuery());
+            _preparedText = PkmDatabaseWire.Document(session, hits);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SearchPkmDatabase(IntPtr arg, int size)
+    {
+        try
+        {
+            var session = RequireSession();
+            var hits = session.SearchPkmDatabase(PkmDatabaseWire.Parse(ReadUtf8AllowEmpty(arg, size)));
+            _preparedText = PkmDatabaseWire.Document(session, hits);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int LoadPkmDatabaseHit(IntPtr arg, int size)
+    {
+        try
+        {
+            if (!int.TryParse(ReadUtf8(arg, size), out var index))
+                return 1;
+            RequireSession().LoadPkmDatabaseHit(index);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 

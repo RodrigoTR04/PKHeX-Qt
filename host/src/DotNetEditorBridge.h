@@ -80,6 +80,9 @@ public:
     QString boxExportDocument() override;
     QString exportBoxes(const QString &destPath, const QString &json) override;
     bool saveBoxExportSettings(const QString &json) override;
+    QString pkmDatabaseDocument() override;
+    QString searchPkmDatabase(const QString &json) override;
+    bool loadPkmDatabaseHit(int index) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -165,4 +168,7 @@ private:
     component_entry_point_fn _prepareBoxExport{};
     component_entry_point_fn _exportBoxes{};
     component_entry_point_fn _saveBoxExportSettings{};
+    component_entry_point_fn _preparePkmDatabase{};
+    component_entry_point_fn _searchPkmDatabase{};
+    component_entry_point_fn _loadPkmDatabaseHit{};
 };

@@ -34,6 +34,7 @@ public sealed class EditorSession
     private PokedexEditor? _pokedex;
     private EntityAccessoryEditor? _accessory;
     private SaveBlockEditor? _saveBlock;
+    private PkmDatabase? _pkmDatabase;
 
     private EditorSession(SaveFile sav)
     {
@@ -279,6 +280,31 @@ public sealed class EditorSession
         }
         return EntityFileNamer.Namer;
     }
+
+    public void OpenPkmDatabase(PkmDatabaseOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        _pkmDatabase = new PkmDatabase(_sav, options);
+    }
+
+    public IReadOnlyList<PkmDatabaseHit> SearchPkmDatabase(PkmDatabaseQuery query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        return RequirePkmDatabase().Search(query);
+    }
+
+    public void LoadPkmDatabaseHit(int index)
+    {
+        var temp = RequirePkmDatabase().Hit(index).Entity;
+        var pk = EntityConverter.ConvertToType(temp, _sav.PKMType, out _)
+            ?? throw new InvalidDataException("Could not convert that Pokémon to this save.");
+        _sav.AdaptToSaveFile(pk);
+        pk.RefreshChecksum();
+        LoadCurrent(pk, _partyOrigin, _originBox, _originSlot);
+    }
+
+    private PkmDatabase RequirePkmDatabase()
+        => _pkmDatabase ?? throw new InvalidOperationException("PKM database is not open.");
 
     public byte[] Export() => Export([]);
 

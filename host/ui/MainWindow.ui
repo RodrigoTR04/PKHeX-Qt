@@ -350,6 +350,9 @@
    <property name="text">
     <string>PKM &amp;Database</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
   </action>
   <action name="Menu_MGDatabase">
    <property name="text">

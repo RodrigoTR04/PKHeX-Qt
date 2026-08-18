@@ -61,6 +61,7 @@ private slots:
     void onOpenBatch();
     void onDumpBoxes();
     void onDumpBox();
+    void onOpenPkmDatabase();
     void onOpenInventory();
     void onOpenPokedex();
     void onOpenSaveBlock();

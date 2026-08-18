@@ -8,6 +8,7 @@
 #include "SaveBlockWindow.h"
 #include "BatchWindow.h"
 #include "BoxExportWindow.h"
+#include "PkmDatabaseWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
 
@@ -432,6 +433,21 @@ public:
     }
 
     bool saveBoxExportSettings(const QString &) override
+    {
+        return true;
+    }
+
+    QString pkmDatabaseDocument() override
+    {
+        return QStringLiteral("{\"speciesChoices\":\"0\\tAny\\n1\\tBulbasaur\",\"count\":1,\"hits\":[{\"index\":0,\"species\":1,\"identify\":\"box\",\"box\":0,\"slot\":0,\"kind\":\"box\"}]}");
+    }
+
+    QString searchPkmDatabase(const QString &) override
+    {
+        return pkmDatabaseDocument();
+    }
+
+    bool loadPkmDatabaseHit(int) override
     {
         return true;
     }
@@ -886,6 +902,27 @@ int main(int argc, char *argv[])
         {
             std::cerr << "box export missing " << name.toStdString() << "\n";
             return 54;
+        }
+    }
+
+    PkmDatabaseWindow dbDialog(&window);
+    dbDialog.loadDocument(editor.pkmDatabaseDocument());
+    const QStringList dbNames{
+        QStringLiteral("B_Search"),
+        QStringLiteral("B_Reset"),
+        QStringLiteral("L_Count"),
+        QStringLiteral("CB_Species"),
+        QStringLiteral("Menu_SearchBoxes"),
+        QStringLiteral("Menu_SearchBackups"),
+        QStringLiteral("DatabasePokeGrid"),
+        QStringLiteral("Tab_General"),
+    };
+    for (const auto &name : dbNames)
+    {
+        if (dbDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "pkm database missing " << name.toStdString() << "\n";
+            return 55;
         }
     }
 

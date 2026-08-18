@@ -205,6 +205,9 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PrepareBoxExport", &_prepareBoxExport);
     load("ExportBoxes", &_exportBoxes);
     load("SaveBoxExportSettings", &_saveBoxExportSettings);
+    load("PreparePkmDatabase", &_preparePkmDatabase);
+    load("SearchPkmDatabase", &_searchPkmDatabase);
+    load("LoadPkmDatabaseHit", &_loadPkmDatabaseHit);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -657,6 +660,21 @@ QString DotNetEditorBridge::exportBoxes(const QString &destPath, const QString &
 bool DotNetEditorBridge::saveBoxExportSettings(const QString &json)
 {
     return call(_saveBoxExportSettings, json);
+}
+
+QString DotNetEditorBridge::pkmDatabaseDocument()
+{
+    return readText(_preparePkmDatabase, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::searchPkmDatabase(const QString &json)
+{
+    return readText(_searchPkmDatabase, json);
+}
+
+bool DotNetEditorBridge::loadPkmDatabaseHit(int index)
+{
+    return call(_loadPkmDatabaseHit, QString::number(index));
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

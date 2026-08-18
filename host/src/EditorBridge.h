@@ -86,4 +86,7 @@ public:
     virtual QString boxExportDocument() = 0;
     virtual QString exportBoxes(const QString &destPath, const QString &json) = 0;
     virtual bool saveBoxExportSettings(const QString &json) = 0;
+    virtual QString pkmDatabaseDocument() = 0;
+    virtual QString searchPkmDatabase(const QString &json) = 0;
+    virtual bool loadPkmDatabaseHit(int index) = 0;
 };

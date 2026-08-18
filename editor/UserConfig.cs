@@ -27,9 +27,18 @@ public sealed class UserConfig
     public bool HoverSlotPlayCry { get; set; } = true;
     public BoxExportSettings BoxExport { get; set; } = new();
     public string DefaultBoxExportNamer { get; set; } = "Default";
+    public string DatabasePath { get; set; } = "pkmdb";
+    public bool SearchBackups { get; set; } = true;
+    public bool SearchExtraSaves { get; set; } = true;
+    public bool SearchExtraSavesDeep { get; set; } = true;
+    public bool FilterUnavailableSpecies { get; set; } = true;
+    public DatabaseSortMode InitialSortMode { get; set; }
 
     [JsonIgnore]
     public string FilePath => Path.Combine(Root, FileName);
+
+    [JsonIgnore]
+    public string DatabaseDirectory => Resolve(DatabasePath);
 
     [JsonIgnore]
     public string BackupDirectory => Path.Combine(Root, "bak");
