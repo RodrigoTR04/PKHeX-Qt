@@ -1,6 +1,7 @@
 #include "BatchWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_BatchEditor.h"
 
 #include <QComboBox>
@@ -16,6 +17,7 @@ BatchWindow::BatchWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::BatchEditor>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     _ui->TB_Folder->setVisible(false);
     connect(_ui->B_Go, &QPushButton::clicked, this, &BatchWindow::runRequested);

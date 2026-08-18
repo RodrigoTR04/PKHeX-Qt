@@ -145,6 +145,50 @@ public sealed class MiscSaveBlockTests
     }
 
     [Fact]
+    public void gen5_box_layout_name_matches_core()
+    {
+        var sav = BlankSaveFile.Get(GameVersion.B);
+        var expected = sav.Clone();
+        ((IBoxDetailName)expected).SetBoxName(0, "ALPHA");
+
+        var session = EditorSession.FromSave(sav);
+        session.OpenSaveBlock();
+        session.SaveBlock.Select("boxLayout");
+        session.SaveBlock.ApplyJson("""{"page":"boxLayout","fields":[{"name":"name0","text":"ALPHA"}]}""");
+        session.SaveSaveBlock();
+
+        Assert.Equal(expected.Write().ToArray(), session.Export());
+    }
+
+    [Fact]
+    public void hgss_apricorn_all_matches_core()
+    {
+        var sav = BlankSaveFile.Get(GameVersion.HG);
+        var expected = sav.Clone();
+        var want = (SAV4HGSS)expected;
+        for (int i = 0; i < 7; i++)
+            want.SetApricornCount(i, 99);
+
+        var session = EditorSession.FromSave(sav);
+        session.OpenSaveBlock();
+        session.SaveBlock.Select("apricorns");
+        session.SaveBlock.Modify("B_All");
+        session.SaveSaveBlock();
+
+        Assert.Equal(expected.Data.ToArray(), sav.Data.ToArray());
+    }
+
+    [Fact]
+    public void gen5_lists_box_layout_and_block_data()
+    {
+        var session = EditorSession.FromSave(BlankSaveFile.Get(GameVersion.B));
+        var pages = session.SaveBlockPages().Split('\n');
+        Assert.Contains("boxLayout", pages);
+        Assert.Contains("blockData", pages);
+        Assert.Contains("misc", pages);
+    }
+
+    [Fact]
     public void misc_cancel_leaves_the_save_unchanged()
     {
         var sav = BlankSaveFile.Get(GameVersion.E);

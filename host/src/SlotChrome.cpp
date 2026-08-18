@@ -1,5 +1,7 @@
 #include "SlotChrome.h"
 
+#include "ComboChrome.h"
+
 #include <QComboBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -7,14 +9,64 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPushButton>
+#include <QResizeEvent>
+#include <QSizePolicy>
 #include <QVBoxLayout>
+
+class SlotLabel : public QLabel
+{
+public:
+    explicit SlotLabel(QWidget *parent)
+        : QLabel(parent)
+    {
+        setAlignment(Qt::AlignCenter);
+        setScaledContents(false);
+        setFrameStyle(QFrame::NoFrame);
+        setLineWidth(0);
+        setAutoFillBackground(false);
+        setAttribute(Qt::WA_TranslucentBackground);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        setMinimumSize(8, 8);
+        setStyleSheet(QStringLiteral("background: transparent; border: none;"));
+    }
+
+    void setSourcePng(const QByteArray &png)
+    {
+        _source = QPixmap();
+        if (!png.isEmpty())
+            _source.loadFromData(png);
+        relayoutPixmap();
+    }
+
+protected:
+    void resizeEvent(QResizeEvent *event) override
+    {
+        QLabel::resizeEvent(event);
+        relayoutPixmap();
+    }
+
+private:
+    void relayoutPixmap()
+    {
+        if (_source.isNull())
+        {
+            clear();
+            return;
+        }
+        const qreal dpr = devicePixelRatioF();
+        const QSize target = size() * dpr;
+        if (target.width() < 1 || target.height() < 1)
+            return;
+        QPixmap scaled = _source.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        scaled.setDevicePixelRatio(dpr);
+        setPixmap(scaled);
+    }
+
+    QPixmap _source;
+};
 
 namespace
 {
-constexpr int kSpriteW = 68;
-constexpr int kSpriteH = 56;
-constexpr int kBorder = 1;
-
 QString slotName(int row, int column)
 {
     return QStringLiteral("Pokémon Grid Row %1 Column %2")
@@ -24,26 +76,23 @@ QString slotName(int row, int column)
 
 QLabel *makeSlot(QWidget *parent, int row, int column)
 {
-    auto *slot = new QLabel(parent);
+    auto *slot = new SlotLabel(parent);
     slot->setObjectName(slotName(row, column));
-    slot->setFixedSize(kSpriteW + 2 * kBorder, kSpriteH + 2 * kBorder);
-    slot->setAlignment(Qt::AlignCenter);
-    slot->setScaledContents(false);
-    slot->setFrameStyle(QFrame::Box);
-    slot->setLineWidth(kBorder);
     return slot;
 }
 
 void fillGrid(QWidget *grid, int columns, int rows, const QString &keyPrefix)
 {
     auto *layout = new QGridLayout(grid);
-    layout->setContentsMargins(1, 1, 1, 1);
-    layout->setSpacing(1);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     int index = 0;
     for (int row = 0; row < rows; ++row)
     {
+        layout->setRowStretch(row, 1);
         for (int column = 0; column < columns; ++column)
         {
+            layout->setColumnStretch(column, 1);
             auto *slot = makeSlot(grid, row, column);
             slot->setProperty("slotKey", keyPrefix + QString::number(index));
             layout->addWidget(slot, row, column);
@@ -58,7 +107,7 @@ QWidget *makeBoxEditor(QWidget *tab)
     box->setObjectName(QStringLiteral("Box"));
     auto *layout = new QVBoxLayout(box);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(2);
+    layout->setSpacing(4);
 
     auto *header = new QWidget(box);
     auto *headerLayout = new QHBoxLayout(header);
@@ -72,6 +121,7 @@ QWidget *makeBoxEditor(QWidget *tab)
     auto *select = new QComboBox(header);
     select->setObjectName(QStringLiteral("CB_BoxSelect"));
     select->setMinimumWidth(128);
+    configureComboBox(select);
 
     auto *right = new QPushButton(header);
     right->setObjectName(QStringLiteral("B_BoxRight"));
@@ -84,9 +134,10 @@ QWidget *makeBoxEditor(QWidget *tab)
 
     auto *grid = new BoxPokeGrid(box);
     grid->setObjectName(QStringLiteral("BoxPokeGrid"));
+    grid->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     fillGrid(grid, 6, 5, QStringLiteral("box:0:"));
 
-    layout->addWidget(header);
+    layout->addWidget(header, 0);
     layout->addWidget(grid, 1);
     return box;
 }
@@ -100,6 +151,7 @@ QWidget *makePartyEditor(QWidget *tab)
 
     auto *grid = new QWidget(party);
     grid->setObjectName(QStringLiteral("PartyPokeGrid"));
+    grid->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     fillGrid(grid, 2, 3, QStringLiteral("party:"));
 
     layout->addWidget(grid, 1);
@@ -111,6 +163,7 @@ BoxPokeGrid::BoxPokeGrid(QWidget *parent)
     : QWidget(parent)
 {
     setAutoFillBackground(false);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void BoxPokeGrid::setWallpaperPng(const QByteArray &png)
@@ -141,24 +194,24 @@ void applySlotPng(QLabel *slot, const QByteArray &png)
 {
     if (slot == nullptr)
         return;
+    if (auto *labeled = dynamic_cast<SlotLabel *>(slot))
+    {
+        labeled->setSourcePng(png);
+        return;
+    }
     if (png.isEmpty())
     {
         slot->clear();
         return;
     }
-
     QPixmap pm;
     if (!pm.loadFromData(png))
     {
         slot->clear();
         return;
     }
-
     const qreal dpr = slot->devicePixelRatioF();
-    QPixmap scaled = pm.scaled(
-        QSize(kSpriteW, kSpriteH) * dpr,
-        Qt::KeepAspectRatio,
-        Qt::SmoothTransformation);
+    QPixmap scaled = pm.scaled(slot->size() * dpr, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     scaled.setDevicePixelRatio(dpr);
     slot->setPixmap(scaled);
 }
@@ -169,13 +222,13 @@ void fillBoxAndPartyChrome(QWidget *tabBox, QWidget *tabParty)
     {
         auto *layout = new QVBoxLayout(tabBox);
         layout->setContentsMargins(4, 4, 4, 4);
-        layout->addWidget(makeBoxEditor(tabBox));
+        layout->addWidget(makeBoxEditor(tabBox), 1);
     }
 
     if (tabParty != nullptr)
     {
         auto *layout = new QVBoxLayout(tabParty);
         layout->setContentsMargins(4, 4, 4, 4);
-        layout->addWidget(makePartyEditor(tabParty));
+        layout->addWidget(makePartyEditor(tabParty), 1);
     }
 }

@@ -1,6 +1,7 @@
 #include "PkmDatabaseWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_SAV_Database.h"
 
 #include <QAbstractItemView>
@@ -25,6 +26,7 @@ PkmDatabaseWindow::PkmDatabaseWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::SAV_Database>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     _ui->DatabasePokeGrid->horizontalHeader()->setStretchLastSection(true);
     _ui->DatabasePokeGrid->verticalHeader()->setVisible(false);

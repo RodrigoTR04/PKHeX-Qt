@@ -16,6 +16,7 @@
 #include "QrWindow.h"
 #include "SavToolChrome.h"
 #include "SlotChrome.h"
+#include "ComboChrome.h"
 #include "ui_MainWindow.h"
 
 #include <QAbstractSpinBox>
@@ -76,6 +77,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     setAcceptDrops(true);
     refreshSavTools();
     refreshPkmEditor();
+    configureComboBoxes(this);
 
     connect(_ui->Menu_Open, &QAction::triggered, this, &MainWindow::onMenuOpen);
     connect(_ui->Menu_ExportSAV, &QAction::triggered, this, &MainWindow::onMenuExportSav);
@@ -404,18 +406,63 @@ void MainWindow::fillSavChrome()
         connect(wonder, &QPushButton::clicked, this, &MainWindow::onOpenWondercards);
     if (auto *dex = findChild<QPushButton *>(QStringLiteral("B_OpenPokedex")))
         connect(dex, &QPushButton::clicked, this, &MainWindow::onOpenPokedex);
-    if (auto *trainer = findChild<QPushButton *>(QStringLiteral("B_OpenTrainerInfo")))
-        connect(trainer, &QPushButton::clicked, this, &MainWindow::onOpenSaveBlock);
-    if (auto *flags = findChild<QPushButton *>(QStringLiteral("B_OpenEventFlags")))
-        connect(flags, &QPushButton::clicked, this, &MainWindow::onOpenEventFlags);
-    if (auto *misc = findChild<QPushButton *>(QStringLiteral("B_OpenMiscEditor")))
-        connect(misc, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("misc")); });
-    if (auto *fashion = findChild<QPushButton *>(QStringLiteral("B_OpenFashion")))
-        connect(fashion, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("fashion")); });
-    if (auto *puffs = findChild<QPushButton *>(QStringLiteral("B_OpenPokepuffs")))
-        connect(puffs, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("pokepuffs")); });
-    if (auto *opowers = findChild<QPushButton *>(QStringLiteral("B_OpenOPowers")))
-        connect(opowers, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("opowers")); });
+
+    static constexpr struct
+    {
+        const char *button;
+        const char *page;
+    } kPages[] = {
+        {"B_OpenTrainerInfo", "trainer"},
+        {"B_OpenEventFlags", "flags"},
+        {"B_OpenMiscEditor", "misc"},
+        {"B_OpenFashion", "fashion"},
+        {"B_OpenPokepuffs", "pokepuffs"},
+        {"B_OpenOPowers", "opowers"},
+        {"B_OpenBoxLayout", "boxLayout"},
+        {"B_OpenLinkInfo", "link"},
+        {"B_OpenBerryField", "berryField"},
+        {"B_OpenPokeblocks", "pokeblocks"},
+        {"B_OpenSecretBase", "secretBase"},
+        {"B_OpenSuperTraining", "superTrain"},
+        {"B_OpenHallofFame", "hallOfFame"},
+        {"B_DLC", "dlc"},
+        {"B_Donuts", "donuts"},
+        {"B_OpenPokeBeans", "pokebeans"},
+        {"B_CellsStickers", "cellsStickers"},
+        {"B_OpenHoneyTreeEditor", "honeyTree"},
+        {"B_OpenRTCEditor", "rtc"},
+        {"B_OpenUGSEditor", "underground"},
+        {"B_OpenGeonetEditor", "geonet"},
+        {"B_OpenUnityTowerEditor", "unityTower"},
+        {"B_OpenJoinAvenueEditor", "joinAvenue"},
+        {"B_OpenPokeathlon", "pokeathlon"},
+        {"B_OpenMedalsEditor", "medals"},
+        {"B_OpenChatterEditor", "chatter"},
+        {"B_Roamer", "roamer"},
+        {"B_FestivalPlaza", "festivalPlaza"},
+        {"B_MailBox", "mailBox"},
+        {"B_OpenApricorn", "apricorns"},
+        {"B_Raids", "raids"},
+        {"B_RaidsDLC1", "raidsDlc1"},
+        {"B_RaidsDLC2", "raidsDlc2"},
+        {"B_Blocks", "blockData"},
+        {"B_OtherSlots", "otherSlots"},
+        {"B_OpenSealStickers", "sealStickers"},
+        {"B_Poffins", "poffins"},
+        {"B_RaidsSevenStar", "raidsSevenStar"},
+        {"B_OpenBattlePass", "battlePass"},
+        {"B_OpenGear", "gear"},
+        {"B_OpenGlobalLink", "globalLink"},
+        {"B_OpenFriendSafari", "friendSafari"},
+    };
+    for (const auto &entry : kPages)
+    {
+        if (auto *button = findChild<QPushButton *>(QString::fromLatin1(entry.button)))
+        {
+            const QString page = QString::fromLatin1(entry.page);
+            connect(button, &QPushButton::clicked, this, [this, page] { openSaveBlockPage(page); });
+        }
+    }
 }
 
 void MainWindow::onOpenInventory()

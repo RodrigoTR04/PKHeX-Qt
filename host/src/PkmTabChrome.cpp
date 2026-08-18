@@ -1,5 +1,7 @@
 #include "PkmTabChrome.h"
 
+#include "ComboChrome.h"
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
@@ -81,6 +83,7 @@ QComboBox *combo(QWidget *parent, const QString &name, int width = 0)
     box->setObjectName(name);
     box->setEditable(false);
     pinControl(box, width);
+    configureComboBox(box);
     return box;
 }
 

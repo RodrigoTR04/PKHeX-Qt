@@ -1,5 +1,6 @@
 #include "SaveBlockWindow.h"
 
+#include "ComboChrome.h"
 #include "LangCatalog.h"
 #include "ui_SAV_SimpleTrainer.h"
 
@@ -49,6 +50,7 @@ SaveBlockWindow::SaveBlockWindow(QWidget *parent)
     catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
     catalog.apply(this, QStringLiteral("SAV_SimpleTrainer"));
     setPageKind(QStringLiteral("trainer"));
+    configureComboBoxes(this);
 }
 
 SaveBlockWindow::~SaveBlockWindow() = default;
@@ -227,24 +229,75 @@ void SaveBlockWindow::clearBlockActions()
 void SaveBlockWindow::fillFields(const QJsonObject &root)
 {
     setPageKind(QStringLiteral("fields"));
+    const QString title = root.value(QStringLiteral("title")).toString();
+    if (!title.isEmpty())
+    {
+        setWindowTitle(title);
+        _ui->GB_BlockTools->setTitle(title);
+    }
+    setMinimumSize(520, 560);
     auto *table = _ui->TLP_Fields;
-    table->horizontalHeader()->setVisible(false);
+    table->setColumnCount(3);
+    table->setHorizontalHeaderLabels({QStringLiteral("#"), QStringLiteral("Label"), QStringLiteral("Value")});
+    table->horizontalHeader()->setVisible(true);
     table->verticalHeader()->setVisible(false);
-    table->setShowGrid(false);
+    table->setShowGrid(true);
+    table->setAlternatingRowColors(true);
+    table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     const auto rows = root.value(QStringLiteral("fields")).toArray();
     table->setRowCount(rows.size());
     for (int i = 0; i < rows.size(); ++i)
     {
         const auto row = rows.at(i).toObject();
-        auto *spin = new QSpinBox(table);
-        spin->setMaximum(999999999);
-        spin->setValue(row.value(QStringLiteral("value")).toInt());
-        table->setCellWidget(i, 0, spin);
+        const QString kind = row.value(QStringLiteral("kind")).toString(QStringLiteral("number"));
+        const int index = row.value(QStringLiteral("index")).toInt(-1);
+        auto *indexItem = new QTableWidgetItem(index >= 0 ? QString::number(index) : QString());
+        indexItem->setFlags(indexItem->flags() & ~Qt::ItemIsEditable);
+        table->setItem(i, 0, indexItem);
+
         auto *label = new QTableWidgetItem(row.value(QStringLiteral("label")).toString());
         label->setFlags(label->flags() & ~Qt::ItemIsEditable);
         label->setData(Qt::UserRole, row.value(QStringLiteral("name")).toString());
+        label->setData(Qt::UserRole + 1, kind);
         table->setItem(i, 1, label);
+
+        if (kind == QLatin1String("bool"))
+        {
+            auto *check = new QCheckBox(table);
+            check->setChecked(row.value(QStringLiteral("value")).toInt() != 0);
+            table->setCellWidget(i, 2, check);
+        }
+        else if (kind == QLatin1String("text"))
+        {
+            auto *edit = new QLineEdit(table);
+            edit->setText(row.value(QStringLiteral("text")).toString());
+            table->setCellWidget(i, 2, edit);
+        }
+        else if (kind == QLatin1String("choice"))
+        {
+            auto *combo = new QComboBox(table);
+            configureComboBox(combo);
+            const auto choices = row.value(QStringLiteral("choices")).toArray();
+            for (const auto &entry : choices)
+            {
+                const auto choice = entry.toObject();
+                combo->addItem(choice.value(QStringLiteral("label")).toString(),
+                    choice.value(QStringLiteral("value")).toInt());
+            }
+            const int at = combo->findData(row.value(QStringLiteral("value")).toInt());
+            if (at >= 0)
+                combo->setCurrentIndex(at);
+            table->setCellWidget(i, 2, combo);
+        }
+        else
+        {
+            auto *spin = new QSpinBox(table);
+            spin->setMaximum(999999999);
+            spin->setValue(row.value(QStringLiteral("value")).toInt());
+            table->setCellWidget(i, 2, spin);
+        }
     }
     clearBlockActions();
     auto *actions = qobject_cast<QHBoxLayout *>(_ui->P_BlockActions->layout());
@@ -261,6 +314,11 @@ void SaveBlockWindow::fillFields(const QJsonObject &root)
     LangCatalog catalog;
     catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
     catalog.apply(this, root.value(QStringLiteral("langForm")).toString());
+    if (!title.isEmpty())
+    {
+        setWindowTitle(title);
+        _ui->GB_BlockTools->setTitle(title);
+    }
 }
 
 QJsonObject SaveBlockWindow::collectDocument() const
@@ -309,10 +367,22 @@ QJsonObject SaveBlockWindow::collectDocument() const
             if (label == nullptr)
                 continue;
             QJsonObject row;
+            const QString kind = label->data(Qt::UserRole + 1).toString();
             row.insert(QStringLiteral("name"), label->data(Qt::UserRole).toString());
             row.insert(QStringLiteral("label"), label->text());
-            auto *spin = qobject_cast<QSpinBox *>(_ui->TLP_Fields->cellWidget(i, 0));
-            row.insert(QStringLiteral("value"), spin == nullptr ? 0 : spin->value());
+            row.insert(QStringLiteral("kind"), kind);
+            const auto *indexItem = _ui->TLP_Fields->item(i, 0);
+            if (indexItem != nullptr && !indexItem->text().isEmpty())
+                row.insert(QStringLiteral("index"), indexItem->text().toInt());
+            auto *widget = _ui->TLP_Fields->cellWidget(i, 2);
+            if (auto *check = qobject_cast<QCheckBox *>(widget))
+                row.insert(QStringLiteral("value"), check->isChecked() ? 1 : 0);
+            else if (auto *edit = qobject_cast<QLineEdit *>(widget))
+                row.insert(QStringLiteral("text"), edit->text());
+            else if (auto *combo = qobject_cast<QComboBox *>(widget))
+                row.insert(QStringLiteral("value"), combo->currentData().toInt());
+            else if (auto *spin = qobject_cast<QSpinBox *>(widget))
+                row.insert(QStringLiteral("value"), spin->value());
             fields.append(row);
         }
         root.insert(QStringLiteral("fields"), fields);

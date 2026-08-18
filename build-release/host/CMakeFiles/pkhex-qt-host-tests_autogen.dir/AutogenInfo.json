@@ -626,6 +626,12 @@
 			null
 		],
 		[
+			"/mnt/557377b4-8a41-467d-a6ab-9205ddc5becc/Documents/Projects/PKHeX-Qt/host/src/ComboChrome.h",
+			"MU",
+			"UVLADIE3JM/moc_ComboChrome.cpp",
+			null
+		],
+		[
 			"/mnt/557377b4-8a41-467d-a6ab-9205ddc5becc/Documents/Projects/PKHeX-Qt/host/src/EditorBridge.h",
 			"MU",
 			"UVLADIE3JM/moc_EditorBridge.cpp",
@@ -821,6 +827,11 @@
 		],
 		[
 			"/mnt/557377b4-8a41-467d-a6ab-9205ddc5becc/Documents/Projects/PKHeX-Qt/host/src/BoxExportWindow.cpp",
+			"MU",
+			null
+		],
+		[
+			"/mnt/557377b4-8a41-467d-a6ab-9205ddc5becc/Documents/Projects/PKHeX-Qt/host/src/ComboChrome.cpp",
 			"MU",
 			null
 		],

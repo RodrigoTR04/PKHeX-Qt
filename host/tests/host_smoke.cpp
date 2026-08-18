@@ -21,6 +21,7 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QEvent>
+#include <QFrame>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
@@ -636,6 +637,13 @@ int main(int argc, char *argv[])
     auto *slot = boxGrid->findChild<QLabel *>(QString::fromUtf8("Pokémon Grid Row 00 Column 00"));
     if (slot == nullptr)
         return 18;
+    if (slot->frameStyle() != QFrame::NoFrame)
+        return 51;
+    if (boxSelect->maxVisibleItems() != 12)
+        return 52;
+    auto *species = window.findChild<QComboBox *>(QStringLiteral("CB_Species"));
+    if (species == nullptr || species->maxVisibleItems() != 12)
+        return 53;
 
     QMouseEvent press(
         QEvent::MouseButtonPress,

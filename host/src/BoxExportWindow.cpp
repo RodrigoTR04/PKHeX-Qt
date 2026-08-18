@@ -1,6 +1,7 @@
 #include "BoxExportWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_BoxExporter.h"
 
 #include <QComboBox>
@@ -39,6 +40,7 @@ BoxExportWindow::BoxExportWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::BoxExporter>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     LangCatalog catalog;
     catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));

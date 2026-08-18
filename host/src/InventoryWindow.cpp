@@ -1,6 +1,7 @@
 #include "InventoryWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_SAV_Inventory.h"
 
 #include <QAction>
@@ -141,6 +142,7 @@ InventoryWindow::InventoryWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::SAV_Inventory>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     setWindowFlag(Qt::WindowMaximizeButtonHint, false);
     buildMenus();
@@ -246,6 +248,7 @@ void InventoryWindow::fillPouches(const QJsonObject &root)
             else
             {
                 auto *combo = new QComboBox(table);
+                configureComboBox(combo);
                 combo->addItems(choiceList);
                 const int at = combo->findText(row.value(QStringLiteral("item")).toString());
                 if (at >= 0)

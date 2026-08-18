@@ -1,6 +1,7 @@
 #include "EncounterDatabaseWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_SAV_Encounters.h"
 
 #include <QAbstractItemView>
@@ -47,6 +48,7 @@ EncounterDatabaseWindow::EncounterDatabaseWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::SAV_Encounters>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     _ui->EncounterPokeGrid->horizontalHeader()->setStretchLastSection(true);
     _ui->EncounterPokeGrid->verticalHeader()->setVisible(false);

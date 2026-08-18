@@ -2,6 +2,7 @@
 
 #include <QGridLayout>
 #include <QPushButton>
+#include <QSizePolicy>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
@@ -17,8 +18,11 @@ void fillSavToolButtons(QWidget *flow)
     if (layout == nullptr)
     {
         layout = new QGridLayout(flow);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(4);
+        layout->setContentsMargins(4, 4, 4, 4);
+        layout->setSpacing(8);
+        layout->setColumnStretch(0, 1);
+        layout->setColumnStretch(1, 1);
+        layout->setColumnStretch(2, 1);
     }
 
     static constexpr const char *kNames[] = {
@@ -76,6 +80,8 @@ void fillSavToolButtons(QWidget *flow)
         auto *button = new QPushButton(flow);
         button->setObjectName(QString::fromLatin1(name));
         button->setText(QString::fromLatin1(name));
+        button->setMinimumSize(132, 44);
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         layout->addWidget(button, index / 3, index % 3);
         ++index;
     }
@@ -131,4 +137,10 @@ void applySavToolVisibility(QWidget *window, const QStringList &visible)
         layout->addWidget(button, index / 3, index % 3);
         ++index;
     }
+    const int rows = (index + 2) / 3;
+    for (int row = 0; row < layout->rowCount(); ++row)
+        layout->setRowStretch(row, row < rows ? 1 : 0);
+    layout->setColumnStretch(0, 1);
+    layout->setColumnStretch(1, 1);
+    layout->setColumnStretch(2, 1);
 }

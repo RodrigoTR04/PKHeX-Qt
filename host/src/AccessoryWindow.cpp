@@ -1,6 +1,7 @@
 #include "AccessoryWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_RibbonEditor.h"
 
 #include <QCheckBox>
@@ -46,6 +47,7 @@ AccessoryWindow::AccessoryWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::RibbonEditor>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     _ui->TLP_Ribbons->horizontalHeader()->setVisible(false);
     _ui->TLP_Ribbons->verticalHeader()->setVisible(false);

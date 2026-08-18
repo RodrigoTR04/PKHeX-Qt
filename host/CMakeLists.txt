@@ -77,6 +77,7 @@ set(HOST_SOURCES
   src/SavToolChrome.cpp
   src/SlotChrome.cpp
   src/PkmTabChrome.cpp
+  src/ComboChrome.cpp
 )
 set(HOST_HEADERS
   src/MainWindow.h
@@ -99,6 +100,7 @@ set(HOST_HEADERS
   src/SavToolChrome.h
   src/SlotChrome.h
   src/PkmTabChrome.h
+  src/ComboChrome.h
 )
 
 add_executable(pkhex-qt

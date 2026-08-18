@@ -1,6 +1,7 @@
 #include "PokedexWindow.h"
 
 #include "LangCatalog.h"
+#include "ComboChrome.h"
 #include "ui_SAV_Pokedex.h"
 
 #include <QAction>
@@ -19,6 +20,7 @@ PokedexWindow::PokedexWindow(QWidget *parent)
     , _ui(std::make_unique<Ui::SAV_Pokedex5>())
 {
     _ui->setupUi(this);
+    configureComboBoxes(this);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     buildMenus();
     connect(_ui->B_Save, &QPushButton::clicked, this, &QDialog::accept);
