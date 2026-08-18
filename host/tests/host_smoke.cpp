@@ -1,3 +1,4 @@
+#include "AccessoryWindow.h"
 #include "AboutWindow.h"
 #include "AppInfo.h"
 #include "EditorBridge.h"
@@ -327,6 +328,34 @@ public:
     {
         return true;
     }
+
+    bool hasAccessory() const override
+    {
+        return true;
+    }
+
+    QString accessoryDocument() override
+    {
+        return QStringLiteral(
+            "{\"page\":\"ribbons\",\"langForm\":\"RibbonEditor\",\"hasAffixed\":false,\"affixed\":-1,"
+            "\"ribbons\":[{\"name\":\"RibbonChampionSinnoh\",\"label\":\"Sinnoh Champ Ribbon\","
+            "\"type\":\"bool\",\"hasRibbon\":false,\"count\":0,\"maxCount\":0}]}");
+    }
+
+    QString accessoryModify(const QString &, const QString &json) override
+    {
+        return json;
+    }
+
+    bool saveAccessory(const QString &) override
+    {
+        return true;
+    }
+
+    bool cancelAccessory() override
+    {
+        return true;
+    }
 };
 
 int main(int argc, char *argv[])
@@ -380,6 +409,7 @@ int main(int argc, char *argv[])
         QStringLiteral("B_OpenItemPouch"),
         QStringLiteral("B_OpenTrainerInfo"),
         QStringLiteral("B_OpenPokedex"),
+        QStringLiteral("BTN_Ribbons"),
         QStringLiteral("dragout"),
         QStringLiteral("PB_Legal"),
         QStringLiteral("splitContainer1"),
@@ -641,6 +671,32 @@ int main(int argc, char *argv[])
     {
         std::cerr << "pokedex title was " << pokedexDialog.windowTitle().toStdString() << "\n";
         return 48;
+    }
+
+    AccessoryWindow accessoryDialog(&window);
+    accessoryDialog.loadDocument(editor.accessoryDocument());
+    const QStringList ribbonNames{
+        QStringLiteral("B_Save"),
+        QStringLiteral("B_Cancel"),
+        QStringLiteral("B_All"),
+        QStringLiteral("B_None"),
+        QStringLiteral("CB_Affixed"),
+        QStringLiteral("TLP_Ribbons"),
+        QStringLiteral("SPLIT_Ribbons"),
+        QStringLiteral("CHK_RibbonChampionSinnoh"),
+    };
+    for (const auto &name : ribbonNames)
+    {
+        if (accessoryDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "ribbons missing " << name.toStdString() << "\n";
+            return 49;
+        }
+    }
+    if (accessoryDialog.windowTitle() != QLatin1String("Ribbon Editor"))
+    {
+        std::cerr << "ribbons title was " << accessoryDialog.windowTitle().toStdString() << "\n";
+        return 49;
     }
 
     return 0;

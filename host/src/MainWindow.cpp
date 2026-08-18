@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+#include "AccessoryWindow.h"
 #include "AboutWindow.h"
 #include "EditorBridge.h"
 #include "InventoryWindow.h"
@@ -310,6 +311,24 @@ void MainWindow::onOpenPokedex()
         _editor.cancelPokedex();
 }
 
+void MainWindow::onOpenAccessory()
+{
+    if (!_editor.hasSession() || !_editor.hasAccessory())
+        return;
+    AccessoryWindow dialog(this);
+    dialog.loadDocument(_editor.accessoryDocument());
+    connect(&dialog, &AccessoryWindow::modifyRequested, this, [&](const QString &action) {
+        const QString next = _editor.accessoryModify(action, dialog.document());
+        if (!next.isEmpty())
+            dialog.loadDocument(next);
+    });
+    if (dialog.exec() == QDialog::Accepted)
+        _editor.saveAccessory(dialog.document());
+    else
+        _editor.cancelAccessory();
+    refreshPkmEditor();
+}
+
 void MainWindow::fillSlotChrome()
 {
     fillBoxAndPartyChrome(
@@ -507,6 +526,8 @@ void MainWindow::fillPkmChrome()
         findChild<QWidget *>(QStringLiteral("Tab_Cosmetic")),
         findChild<QWidget *>(QStringLiteral("Tab_OTMisc")));
     bindPkmFields();
+    if (auto *ribbons = findChild<QPushButton *>(QStringLiteral("BTN_Ribbons")))
+        connect(ribbons, &QPushButton::clicked, this, &MainWindow::onOpenAccessory);
     if (auto *legal = findChild<QLabel *>(QStringLiteral("PB_Legal")))
     {
         legal->installEventFilter(this);
@@ -629,6 +650,8 @@ void MainWindow::refreshPkmEditor()
     applyFieldValue(QStringLiteral("L_Characteristic"), _editor.getField(QStringLiteral("L_Characteristic")));
     applyFieldValue(QStringLiteral("Label_HiddenPowerPower"), _editor.getField(QStringLiteral("Label_HiddenPowerPower")));
     setLegalityIcon(findChild<QLabel *>(QStringLiteral("PB_Legal")), _editor.legalityValid());
+    if (auto *ribbons = findChild<QPushButton *>(QStringLiteral("BTN_Ribbons")))
+        ribbons->setVisible(_editor.hasAccessory());
     _pkmBusy = false;
 }
 

@@ -31,6 +31,7 @@ public sealed class EditorSession
     private readonly ArtworkSpriteComposer _sprites = new();
     private InventoryEditor? _inventory;
     private PokedexEditor? _pokedex;
+    private EntityAccessoryEditor? _accessory;
 
     private EditorSession(SaveFile sav)
     {
@@ -155,6 +156,48 @@ public sealed class EditorSession
     {
         Pokedex.ApplyJson(json);
         SavePokedex();
+    }
+
+    public bool HasAccessoryEditor => _current is { Format: >= 3 };
+
+    public EntityAccessoryEditor Accessory =>
+        _accessory ?? throw new InvalidOperationException("Accessory editor is not open.");
+
+    public void OpenAccessory() => _accessory = EntityAccessoryEditor.Open(RequireCurrent());
+
+    public void SaveAccessory()
+    {
+        Accessory.Save();
+        CurrentEntity = RequireCurrent().Data.ToArray();
+        _accessory = null;
+    }
+
+    public void CancelAccessory()
+    {
+        _accessory?.Discard();
+        if (_current is not null)
+            CurrentEntity = _current.Data.ToArray();
+        _accessory = null;
+    }
+
+    public string AccessoryDocument()
+    {
+        OpenAccessory();
+        return Accessory.ToJson();
+    }
+
+    public string AccessoryModify(string action, string json)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(action);
+        Accessory.ApplyJson(json);
+        Accessory.Modify(action);
+        return Accessory.ToJson();
+    }
+
+    public void SaveAccessoryDocument(string json)
+    {
+        Accessory.ApplyJson(json);
+        SaveAccessory();
     }
 
     public byte[] Export() => Export([]);

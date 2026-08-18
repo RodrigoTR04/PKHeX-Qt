@@ -223,6 +223,15 @@ void fillOt(QWidget *tab)
     otForm->addRow(lab(otBox, "Label_SID", QStringLiteral("SID:")), edit(otBox, "TB_SID"));
     layout->addRow(otBox);
     layout->addRow(lab(tab, "Label_Friendship", QStringLiteral("Friendship:")), edit(tab, "TB_Friendship"));
+    auto *editors = new QWidget(tab);
+    editors->setObjectName(QStringLiteral("FLP_PKMEditors"));
+    auto *editorLay = new QHBoxLayout(editors);
+    editorLay->setContentsMargins(0, 0, 0, 0);
+    auto *ribbons = new QPushButton(QStringLiteral("Ribbons"), editors);
+    ribbons->setObjectName(QStringLiteral("BTN_Ribbons"));
+    editorLay->addWidget(ribbons);
+    editorLay->addStretch();
+    layout->addRow(editors);
 }
 }
 

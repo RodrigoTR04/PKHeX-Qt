@@ -66,6 +66,7 @@ set(HOST_SOURCES
   src/QrWindow.cpp
   src/InventoryWindow.cpp
   src/PokedexWindow.cpp
+  src/AccessoryWindow.cpp
   src/LangCatalog.cpp
   src/SavToolChrome.cpp
   src/SlotChrome.cpp
@@ -80,6 +81,7 @@ set(HOST_HEADERS
   src/QrWindow.h
   src/InventoryWindow.h
   src/PokedexWindow.h
+  src/AccessoryWindow.h
   src/EditorBridge.h
   src/LangCatalog.h
   src/SavToolChrome.h
@@ -100,6 +102,7 @@ add_executable(pkhex-qt
   ui/SplashScreen.ui
   ui/SAV_Inventory.ui
   ui/SAV_Pokedex.ui
+  ui/RibbonEditor.ui
 )
 target_include_directories(pkhex-qt PRIVATE src "${NETHOST_DIR}")
 target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets Qt6::Multimedia nethost ${CMAKE_DL_LIBS})
@@ -122,6 +125,7 @@ add_executable(pkhex-qt-host-tests
   ui/SplashScreen.ui
   ui/SAV_Inventory.ui
   ui/SAV_Pokedex.ui
+  ui/RibbonEditor.ui
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
 target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets Qt6::Multimedia)

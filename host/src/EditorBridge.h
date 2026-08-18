@@ -68,4 +68,9 @@ public:
     virtual QString pokedexModify(const QString &action, const QString &json) = 0;
     virtual bool savePokedex(const QString &json) = 0;
     virtual bool cancelPokedex() = 0;
+    virtual bool hasAccessory() const = 0;
+    virtual QString accessoryDocument() = 0;
+    virtual QString accessoryModify(const QString &action, const QString &json) = 0;
+    virtual bool saveAccessory(const QString &json) = 0;
+    virtual bool cancelAccessory() = 0;
 };

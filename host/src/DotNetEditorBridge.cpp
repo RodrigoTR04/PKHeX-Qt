@@ -187,6 +187,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PokedexModify", &_pokedexModify);
     load("SavePokedex", &_savePokedex);
     load("CancelPokedex", &_cancelPokedex);
+    load("HasAccessory", &_hasAccessory);
+    load("PrepareAccessory", &_prepareAccessory);
+    load("AccessoryModify", &_accessoryModify);
+    load("SaveAccessory", &_saveAccessory);
+    load("CancelAccessory", &_cancelAccessory);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -539,6 +544,35 @@ bool DotNetEditorBridge::cancelPokedex()
     if (_cancelPokedex == nullptr)
         return false;
     return _cancelPokedex(nullptr, 0) == 0;
+}
+
+bool DotNetEditorBridge::hasAccessory() const
+{
+    if (_hasAccessory == nullptr)
+        return false;
+    return _hasAccessory(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::accessoryDocument()
+{
+    return readText(_prepareAccessory, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::accessoryModify(const QString &action, const QString &json)
+{
+    return readText(_accessoryModify, action + QLatin1Char('\n') + json);
+}
+
+bool DotNetEditorBridge::saveAccessory(const QString &json)
+{
+    return call(_saveAccessory, json);
+}
+
+bool DotNetEditorBridge::cancelAccessory()
+{
+    if (_cancelAccessory == nullptr)
+        return false;
+    return _cancelAccessory(nullptr, 0) == 0;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

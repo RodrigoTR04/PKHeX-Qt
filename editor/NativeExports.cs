@@ -761,6 +761,82 @@ public static class NativeExports
         }
     }
 
+    public static int HasAccessory(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().HasAccessoryEditor ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PrepareAccessory(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().AccessoryDocument();
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int AccessoryModify(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8(arg, size);
+            var split = raw.IndexOf('\n');
+            if (split <= 0)
+                return -1;
+            _preparedText = RequireSession().AccessoryModify(raw[..split], raw[(split + 1)..]);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SaveAccessory(IntPtr arg, int size)
+    {
+        try
+        {
+            RequireSession().SaveAccessoryDocument(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int CancelAccessory(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            RequireSession().CancelAccessory();
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 
