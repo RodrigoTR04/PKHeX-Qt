@@ -1,0 +1,171 @@
+#include "SaveBlockWindow.h"
+
+#include "LangCatalog.h"
+#include "ui_SAV_SimpleTrainer.h"
+
+#include <QCheckBox>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QtGlobal>
+#include <QVariant>
+
+SaveBlockWindow::SaveBlockWindow(QWidget *parent)
+    : QDialog(parent)
+    , _ui(std::make_unique<Ui::SAV_SimpleTrainer>())
+{
+    _ui->setupUi(this);
+    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+    _ui->CB_Gender->addItem(QStringLiteral("♂"), 0);
+    _ui->CB_Gender->addItem(QStringLiteral("♀"), 1);
+    _ui->CB_BattleStyle->addItem(QStringLiteral("Shift"), 0);
+    _ui->CB_BattleStyle->addItem(QStringLiteral("Set"), 1);
+    _ui->CB_SoundType->addItem(QStringLiteral("Mono"), 0);
+    _ui->CB_SoundType->addItem(QStringLiteral("Stereo"), 1);
+    for (int i = 0; i < 8; ++i)
+        _ui->CB_TextSpeed->addItem(QString::number(i), i);
+    connect(_ui->B_Save, &QPushButton::clicked, this, &QDialog::accept);
+    connect(_ui->B_Cancel, &QPushButton::clicked, this, &QDialog::reject);
+    connect(_ui->B_MaxCash, &QPushButton::clicked, this, [this] { emit modifyRequested(QStringLiteral("B_MaxCash")); });
+    connect(_ui->B_MaxCoins, &QPushButton::clicked, this, [this] { emit modifyRequested(QStringLiteral("B_MaxCoins")); });
+    const auto markMap = [this] { _mapEdited = true; };
+    connect(_ui->NUD_M, qOverload<int>(&QSpinBox::valueChanged), this, markMap);
+    connect(_ui->NUD_X, qOverload<int>(&QSpinBox::valueChanged), this, markMap);
+    connect(_ui->NUD_Y, qOverload<int>(&QSpinBox::valueChanged), this, markMap);
+    connect(_ui->NUD_Z, qOverload<int>(&QSpinBox::valueChanged), this, markMap);
+    LangCatalog catalog;
+    catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
+    catalog.apply(this, QStringLiteral("SAV_SimpleTrainer"));
+}
+
+SaveBlockWindow::~SaveBlockWindow() = default;
+
+void SaveBlockWindow::loadDocument(const QString &json)
+{
+    const auto root = QJsonDocument::fromJson(json.toUtf8()).object();
+    fillTrainer(root);
+    setProperty("saveBlockRoot", QVariant::fromValue(root));
+}
+
+void SaveBlockWindow::fillTrainer(const QJsonObject &root)
+{
+    _mapEdited = false;
+    _ui->TB_OTName->setText(root.value(QStringLiteral("ot")).toString());
+    _ui->CB_Gender->setCurrentIndex(root.value(QStringLiteral("gender")).toInt());
+    _ui->MT_TID->setValue(root.value(QStringLiteral("tid")).toInt());
+    _ui->MT_SID->setValue(root.value(QStringLiteral("sid")).toInt());
+    _ui->MT_Money->setMaximum(root.value(QStringLiteral("maxMoney")).toInt(9999999));
+    _ui->MT_Money->setValue(root.value(QStringLiteral("money")).toInt());
+    _ui->MT_Coins->setMaximum(root.value(QStringLiteral("maxCoins")).toInt(9999));
+    _ui->MT_Coins->setValue(root.value(QStringLiteral("coins")).toInt());
+    _ui->MT_Hours->setValue(root.value(QStringLiteral("hours")).toInt());
+    _ui->MT_Minutes->setValue(root.value(QStringLiteral("minutes")).toInt());
+    _ui->MT_Seconds->setValue(root.value(QStringLiteral("seconds")).toInt());
+    _ui->MT_PikaFriend->setValue(root.value(QStringLiteral("pikaFriendship")).toInt());
+    _ui->MT_PikaBeach->setValue(root.value(QStringLiteral("pikaBeach")).toInt());
+    _ui->CB_Country->setValue(root.value(QStringLiteral("country")).toInt());
+    _ui->CB_Region->setValue(root.value(QStringLiteral("region")).toInt());
+    _ui->CHK_BattleEffects->setChecked(root.value(QStringLiteral("battleEffects")).toBool());
+    _ui->CB_BattleStyle->setCurrentIndex(root.value(QStringLiteral("battleStyle")).toInt());
+    _ui->CB_SoundType->setCurrentIndex(root.value(QStringLiteral("sound")).toInt());
+    _ui->CB_TextSpeed->setCurrentIndex(root.value(QStringLiteral("textSpeed")).toInt());
+    _ui->NUD_M->setValue(root.value(QStringLiteral("mapM")).toInt());
+    _ui->NUD_X->setValue(root.value(QStringLiteral("mapX")).toInt());
+    _ui->NUD_Y->setValue(root.value(QStringLiteral("mapY")).toInt());
+    _ui->NUD_Z->setValue(root.value(QStringLiteral("mapZ")).toInt());
+    _mapEdited = false;
+
+    const int badges = root.value(QStringLiteral("badges")).toInt();
+    const int badgeCount = root.value(QStringLiteral("badgeCount")).toInt(8);
+    const char *names[] = {
+        "CHK_1", "CHK_2", "CHK_3", "CHK_4", "CHK_5", "CHK_6", "CHK_7", "CHK_8",
+        "CHK_H1", "CHK_H2", "CHK_H3", "CHK_H4", "CHK_H5", "CHK_H6", "CHK_H7", "CHK_H8",
+    };
+    for (int i = 0; i < 16; ++i)
+    {
+        auto *box = findChild<QCheckBox *>(QString::fromLatin1(names[i]));
+        if (box == nullptr)
+            continue;
+        box->setVisible(i < badgeCount);
+        box->setChecked((badges & (1 << i)) != 0);
+    }
+
+    const bool gender = root.value(QStringLiteral("hasGender")).toBool();
+    const bool sid = root.value(QStringLiteral("hasSid")).toBool();
+    const bool coins = root.value(QStringLiteral("hasCoins")).toBool();
+    const bool country = root.value(QStringLiteral("hasCountry")).toBool();
+    const bool map = root.value(QStringLiteral("hasMap")).toBool();
+    const bool options = root.value(QStringLiteral("hasOptions")).toBool();
+    const bool pika = root.value(QStringLiteral("hasPika")).toBool();
+    _ui->CB_Gender->setVisible(gender);
+    _ui->L_SID->setVisible(sid);
+    _ui->MT_SID->setVisible(sid);
+    _ui->L_Coins->setVisible(coins);
+    _ui->MT_Coins->setVisible(coins);
+    _ui->B_MaxCoins->setVisible(coins);
+    _ui->L_Country->setVisible(country);
+    _ui->CB_Country->setVisible(country);
+    _ui->L_Region->setVisible(country);
+    _ui->CB_Region->setVisible(country);
+    _ui->GB_Map->setVisible(map);
+    _ui->GB_Options->setVisible(options);
+    _ui->GB_Badges->setVisible(badgeCount > 0);
+    _ui->L_PikaFriend->setVisible(pika);
+    _ui->MT_PikaFriend->setVisible(pika);
+    _ui->L_PikaBeach->setVisible(pika);
+    _ui->MT_PikaBeach->setVisible(pika);
+
+    LangCatalog catalog;
+    catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
+    catalog.apply(this, root.value(QStringLiteral("langForm")).toString(QStringLiteral("SAV_SimpleTrainer")));
+}
+
+QJsonObject SaveBlockWindow::collectDocument() const
+{
+    QJsonObject root = property("saveBlockRoot").toJsonObject();
+    root.insert(QStringLiteral("ot"), _ui->TB_OTName->text());
+    root.insert(QStringLiteral("gender"), _ui->CB_Gender->currentIndex());
+    root.insert(QStringLiteral("tid"), _ui->MT_TID->value());
+    root.insert(QStringLiteral("sid"), _ui->MT_SID->value());
+    root.insert(QStringLiteral("money"), _ui->MT_Money->value());
+    root.insert(QStringLiteral("coins"), _ui->MT_Coins->value());
+    root.insert(QStringLiteral("hours"), _ui->MT_Hours->value());
+    root.insert(QStringLiteral("minutes"), _ui->MT_Minutes->value());
+    root.insert(QStringLiteral("seconds"), _ui->MT_Seconds->value());
+    root.insert(QStringLiteral("pikaFriendship"), _ui->MT_PikaFriend->value());
+    root.insert(QStringLiteral("pikaBeach"), _ui->MT_PikaBeach->value());
+    root.insert(QStringLiteral("country"), _ui->CB_Country->value());
+    root.insert(QStringLiteral("region"), _ui->CB_Region->value());
+    root.insert(QStringLiteral("battleEffects"), _ui->CHK_BattleEffects->isChecked());
+    root.insert(QStringLiteral("battleStyle"), _ui->CB_BattleStyle->currentIndex());
+    root.insert(QStringLiteral("sound"), _ui->CB_SoundType->currentIndex());
+    root.insert(QStringLiteral("textSpeed"), _ui->CB_TextSpeed->currentIndex());
+    root.insert(QStringLiteral("mapM"), _ui->NUD_M->value());
+    root.insert(QStringLiteral("mapX"), _ui->NUD_X->value());
+    root.insert(QStringLiteral("mapY"), _ui->NUD_Y->value());
+    root.insert(QStringLiteral("mapZ"), _ui->NUD_Z->value());
+    root.insert(QStringLiteral("mapUpdated"), _mapEdited);
+    const char *names[] = {
+        "CHK_1", "CHK_2", "CHK_3", "CHK_4", "CHK_5", "CHK_6", "CHK_7", "CHK_8",
+        "CHK_H1", "CHK_H2", "CHK_H3", "CHK_H4", "CHK_H5", "CHK_H6", "CHK_H7", "CHK_H8",
+    };
+    int badges = 0;
+    for (int i = 0; i < 16; ++i)
+    {
+        auto *box = findChild<QCheckBox *>(QString::fromLatin1(names[i]));
+        if (box != nullptr && box->isVisible() && box->isChecked())
+            badges |= 1 << i;
+    }
+    root.insert(QStringLiteral("badges"), badges);
+    return root;
+}
+
+QString SaveBlockWindow::document() const
+{
+    return QString::fromUtf8(QJsonDocument(collectDocument()).toJson(QJsonDocument::Compact));
+}

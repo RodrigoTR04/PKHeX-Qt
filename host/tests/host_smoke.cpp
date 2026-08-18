@@ -5,6 +5,7 @@
 #include "ErrorWindow.h"
 #include "InventoryWindow.h"
 #include "PokedexWindow.h"
+#include "SaveBlockWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
 
@@ -361,6 +362,35 @@ public:
     {
         return true;
     }
+
+    bool hasSaveBlock() const override
+    {
+        return true;
+    }
+
+    QString saveBlockDocument(const QString &) override
+    {
+        return QStringLiteral(
+            "{\"page\":\"trainer\",\"langForm\":\"SAV_SimpleTrainer\",\"ot\":\"RED\",\"gender\":0,"
+            "\"tid\":12345,\"sid\":0,\"money\":3000,\"coins\":0,\"hours\":0,\"minutes\":0,\"seconds\":0,"
+            "\"badges\":0,\"badgeCount\":8,\"hasGender\":false,\"hasSid\":false,\"hasCoins\":true,"
+            "\"hasCountry\":false,\"hasMap\":false,\"hasOptions\":true,\"hasPika\":false}");
+    }
+
+    QString saveBlockModify(const QString &, const QString &json) override
+    {
+        return json;
+    }
+
+    bool saveSaveBlock(const QString &) override
+    {
+        return true;
+    }
+
+    bool cancelSaveBlock() override
+    {
+        return true;
+    }
 };
 
 int main(int argc, char *argv[])
@@ -707,6 +737,33 @@ int main(int argc, char *argv[])
     {
         std::cerr << "ribbons title was " << accessoryDialog.windowTitle().toStdString() << "\n";
         return 49;
+    }
+
+    SaveBlockWindow trainerDialog(&window);
+    trainerDialog.loadDocument(editor.saveBlockDocument(QStringLiteral("trainer")));
+    const QStringList trainerNames{
+        QStringLiteral("B_Save"),
+        QStringLiteral("B_Cancel"),
+        QStringLiteral("TB_OTName"),
+        QStringLiteral("MT_TID"),
+        QStringLiteral("MT_Money"),
+        QStringLiteral("B_MaxCash"),
+        QStringLiteral("CHK_1"),
+        QStringLiteral("GB_Trainer"),
+    };
+    for (const auto &name : trainerNames)
+    {
+        if (trainerDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "trainer missing " << name.toStdString() << "\n";
+            return 50;
+        }
+    }
+    auto *trainerOt = trainerDialog.findChild<QLineEdit *>(QStringLiteral("TB_OTName"));
+    if (trainerOt == nullptr || trainerOt->text() != QLatin1String("RED"))
+    {
+        std::cerr << "trainer OT was " << (trainerOt ? trainerOt->text().toStdString() : "null") << "\n";
+        return 50;
     }
 
     return 0;

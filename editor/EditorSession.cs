@@ -32,6 +32,7 @@ public sealed class EditorSession
     private InventoryEditor? _inventory;
     private PokedexEditor? _pokedex;
     private EntityAccessoryEditor? _accessory;
+    private SaveBlockEditor? _saveBlock;
 
     private EditorSession(SaveFile sav)
     {
@@ -203,6 +204,46 @@ public sealed class EditorSession
     {
         Accessory.ApplyJson(json);
         SaveAccessory();
+    }
+
+    public bool HasSaveBlockEditor => SaveBlockEditor.Supports(_sav);
+
+    public SaveBlockEditor SaveBlock =>
+        _saveBlock ?? throw new InvalidOperationException("Save-block editor is not open.");
+
+    public void OpenSaveBlock() => _saveBlock = SaveBlockEditor.Open(_sav);
+
+    public void SaveSaveBlock()
+    {
+        SaveBlock.Save();
+        _saveBlock = null;
+    }
+
+    public void CancelSaveBlock()
+    {
+        _saveBlock?.Discard();
+        _saveBlock = null;
+    }
+
+    public string SaveBlockDocument(string page)
+    {
+        OpenSaveBlock();
+        SaveBlock.Select(string.IsNullOrWhiteSpace(page) || page == "-" ? "trainer" : page);
+        return SaveBlock.ToJson();
+    }
+
+    public string SaveBlockModify(string action, string json)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(action);
+        SaveBlock.ApplyJson(json);
+        SaveBlock.Modify(action);
+        return SaveBlock.ToJson();
+    }
+
+    public void SaveSaveBlockDocument(string json)
+    {
+        SaveBlock.ApplyJson(json);
+        SaveSaveBlock();
     }
 
     public byte[] Export() => Export([]);

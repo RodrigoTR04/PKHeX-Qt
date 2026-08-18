@@ -60,6 +60,7 @@ private slots:
     void onMenuAbout();
     void onOpenInventory();
     void onOpenPokedex();
+    void onOpenSaveBlock();
     void openAccessoryPage(const QString &page);
     void clickQr();
     void importQrFromClipboard();

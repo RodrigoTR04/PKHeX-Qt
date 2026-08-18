@@ -854,6 +854,83 @@ public static class NativeExports
         }
     }
 
+    public static int HasSaveBlock(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().HasSaveBlockEditor ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PrepareSaveBlock(IntPtr arg, int size)
+    {
+        try
+        {
+            var page = size > 0 ? ReadUtf8(arg, size) : "trainer";
+            if (string.IsNullOrWhiteSpace(page) || page == "-")
+                page = "trainer";
+            _preparedText = RequireSession().SaveBlockDocument(page);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SaveBlockModify(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8(arg, size);
+            var split = raw.IndexOf('\n');
+            if (split <= 0)
+                return -1;
+            _preparedText = RequireSession().SaveBlockModify(raw[..split], raw[(split + 1)..]);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SaveSaveBlock(IntPtr arg, int size)
+    {
+        try
+        {
+            RequireSession().SaveSaveBlockDocument(ReadUtf8(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int CancelSaveBlock(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            RequireSession().CancelSaveBlock();
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 

@@ -68,6 +68,11 @@ public:
     QString accessoryModify(const QString &action, const QString &json) override;
     bool saveAccessory(const QString &json) override;
     bool cancelAccessory() override;
+    bool hasSaveBlock() const override;
+    QString saveBlockDocument(const QString &page) override;
+    QString saveBlockModify(const QString &action, const QString &json) override;
+    bool saveSaveBlock(const QString &json) override;
+    bool cancelSaveBlock() override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -141,4 +146,9 @@ private:
     component_entry_point_fn _accessoryModify{};
     component_entry_point_fn _saveAccessory{};
     component_entry_point_fn _cancelAccessory{};
+    component_entry_point_fn _hasSaveBlock{};
+    component_entry_point_fn _prepareSaveBlock{};
+    component_entry_point_fn _saveBlockModify{};
+    component_entry_point_fn _saveSaveBlock{};
+    component_entry_point_fn _cancelSaveBlock{};
 };

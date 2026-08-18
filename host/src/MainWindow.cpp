@@ -5,6 +5,7 @@
 #include "EditorBridge.h"
 #include "InventoryWindow.h"
 #include "PokedexWindow.h"
+#include "SaveBlockWindow.h"
 #include "LangCatalog.h"
 #include "PkmTabChrome.h"
 #include "QrWindow.h"
@@ -279,6 +280,8 @@ void MainWindow::fillSavChrome()
         connect(items, &QPushButton::clicked, this, &MainWindow::onOpenInventory);
     if (auto *dex = findChild<QPushButton *>(QStringLiteral("B_OpenPokedex")))
         connect(dex, &QPushButton::clicked, this, &MainWindow::onOpenPokedex);
+    if (auto *trainer = findChild<QPushButton *>(QStringLiteral("B_OpenTrainerInfo")))
+        connect(trainer, &QPushButton::clicked, this, &MainWindow::onOpenSaveBlock);
 }
 
 void MainWindow::onOpenInventory()
@@ -309,6 +312,23 @@ void MainWindow::onOpenPokedex()
         _editor.savePokedex(dialog.document());
     else
         _editor.cancelPokedex();
+}
+
+void MainWindow::onOpenSaveBlock()
+{
+    if (!_editor.hasSession() || !_editor.hasSaveBlock())
+        return;
+    SaveBlockWindow dialog(this);
+    dialog.loadDocument(_editor.saveBlockDocument(QStringLiteral("trainer")));
+    connect(&dialog, &SaveBlockWindow::modifyRequested, this, [&](const QString &action) {
+        const QString next = _editor.saveBlockModify(action, dialog.document());
+        if (!next.isEmpty())
+            dialog.loadDocument(next);
+    });
+    if (dialog.exec() == QDialog::Accepted)
+        _editor.saveSaveBlock(dialog.document());
+    else
+        _editor.cancelSaveBlock();
 }
 
 void MainWindow::openAccessoryPage(const QString &page)

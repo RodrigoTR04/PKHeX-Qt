@@ -74,4 +74,9 @@ public:
     virtual QString accessoryModify(const QString &action, const QString &json) = 0;
     virtual bool saveAccessory(const QString &json) = 0;
     virtual bool cancelAccessory() = 0;
+    virtual bool hasSaveBlock() const = 0;
+    virtual QString saveBlockDocument(const QString &page) = 0;
+    virtual QString saveBlockModify(const QString &action, const QString &json) = 0;
+    virtual bool saveSaveBlock(const QString &json) = 0;
+    virtual bool cancelSaveBlock() = 0;
 };

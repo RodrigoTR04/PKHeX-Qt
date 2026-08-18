@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SAV_SimpleTrainer</class>
+ <widget class="QDialog" name="SAV_SimpleTrainer">
+  <property name="windowTitle">
+   <string>Trainer Data</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="SimpleTrainerRoot">
+   <item>
+    <widget class="QGroupBox" name="GB_Trainer">
+     <property name="title">
+      <string>Trainer</string>
+     </property>
+     <layout class="QFormLayout" name="TrainerForm">
+      <item row="0" column="0">
+       <widget class="QLabel" name="L_TrainerName">
+        <property name="text">
+         <string>OT:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="OtRow">
+        <item>
+         <widget class="QLineEdit" name="TB_OTName"/>
+        </item>
+        <item>
+         <widget class="QComboBox" name="CB_Gender"/>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="L_TID">
+        <property name="text">
+         <string>TID:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="MT_TID">
+        <property name="maximum">
+         <number>65535</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="L_SID">
+        <property name="text">
+         <string>SID:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="MT_SID">
+        <property name="maximum">
+         <number>65535</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="L_Money">
+        <property name="text">
+         <string>Money:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="MoneyRow">
+        <item>
+         <widget class="QSpinBox" name="MT_Money">
+          <property name="maximum">
+           <number>9999999</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="B_MaxCash">
+          <property name="text">
+           <string>Max</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="L_Coins">
+        <property name="text">
+         <string>Coins:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="CoinRow">
+        <item>
+         <widget class="QSpinBox" name="MT_Coins">
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="B_MaxCoins">
+          <property name="text">
+           <string>Max</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="L_Country">
+        <property name="text">
+         <string>Country:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QSpinBox" name="CB_Country">
+        <property name="maximum">
+         <number>255</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="L_Region">
+        <property name="text">
+         <string>Region:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QSpinBox" name="CB_Region">
+        <property name="maximum">
+         <number>255</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="GB_Adventure">
+     <property name="title">
+      <string>Adventure Info</string>
+     </property>
+     <layout class="QFormLayout" name="AdventureForm">
+      <item row="0" column="0">
+       <widget class="QLabel" name="L_Hours">
+        <property name="text">
+         <string>Hours:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="MT_Hours">
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="L_Minutes">
+        <property name="text">
+         <string>Minutes:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="MT_Minutes">
+        <property name="maximum">
+         <number>59</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="L_Seconds">
+        <property name="text">
+         <string>Seconds:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="MT_Seconds">
+        <property name="maximum">
+         <number>59</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="L_PikaFriend">
+        <property name="text">
+         <string>Pikachu Friendship:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="MT_PikaFriend">
+        <property name="maximum">
+         <number>255</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="L_PikaBeach">
+        <property name="text">
+         <string>Pikachu Beach:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSpinBox" name="MT_PikaBeach">
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="GB_Badges">
+     <property name="title">
+      <string>Badges</string>
+     </property>
+     <layout class="QGridLayout" name="BadgeGrid">
+      <item row="0" column="0"><widget class="QCheckBox" name="CHK_1"><property name="text"><string>1</string></property></widget></item>
+      <item row="0" column="1"><widget class="QCheckBox" name="CHK_2"><property name="text"><string>2</string></property></widget></item>
+      <item row="0" column="2"><widget class="QCheckBox" name="CHK_3"><property name="text"><string>3</string></property></widget></item>
+      <item row="0" column="3"><widget class="QCheckBox" name="CHK_4"><property name="text"><string>4</string></property></widget></item>
+      <item row="1" column="0"><widget class="QCheckBox" name="CHK_5"><property name="text"><string>5</string></property></widget></item>
+      <item row="1" column="1"><widget class="QCheckBox" name="CHK_6"><property name="text"><string>6</string></property></widget></item>
+      <item row="1" column="2"><widget class="QCheckBox" name="CHK_7"><property name="text"><string>7</string></property></widget></item>
+      <item row="1" column="3"><widget class="QCheckBox" name="CHK_8"><property name="text"><string>8</string></property></widget></item>
+      <item row="2" column="0"><widget class="QCheckBox" name="CHK_H1"><property name="text"><string>H1</string></property></widget></item>
+      <item row="2" column="1"><widget class="QCheckBox" name="CHK_H2"><property name="text"><string>H2</string></property></widget></item>
+      <item row="2" column="2"><widget class="QCheckBox" name="CHK_H3"><property name="text"><string>H3</string></property></widget></item>
+      <item row="2" column="3"><widget class="QCheckBox" name="CHK_H4"><property name="text"><string>H4</string></property></widget></item>
+      <item row="3" column="0"><widget class="QCheckBox" name="CHK_H5"><property name="text"><string>H5</string></property></widget></item>
+      <item row="3" column="1"><widget class="QCheckBox" name="CHK_H6"><property name="text"><string>H6</string></property></widget></item>
+      <item row="3" column="2"><widget class="QCheckBox" name="CHK_H7"><property name="text"><string>H7</string></property></widget></item>
+      <item row="3" column="3"><widget class="QCheckBox" name="CHK_H8"><property name="text"><string>H8</string></property></widget></item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="GB_Options">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <layout class="QFormLayout" name="OptionsForm">
+      <item row="0" column="0" colspan="2">
+       <widget class="QCheckBox" name="CHK_BattleEffects">
+        <property name="text">
+         <string>Battle Effects</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="LBL_BattleStyle">
+        <property name="text">
+         <string>Battle Style:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="CB_BattleStyle"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="LBL_SoundType">
+        <property name="text">
+         <string>Sound:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="CB_SoundType"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="LBL_TextSpeed">
+        <property name="text">
+         <string>Text Speed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="CB_TextSpeed"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="GB_Map">
+     <property name="title">
+      <string>Map</string>
+     </property>
+     <layout class="QFormLayout" name="MapForm">
+      <item row="0" column="0">
+       <widget class="QLabel" name="L_CurrentMap">
+        <property name="text">
+         <string>Map:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="NUD_M">
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="L_X">
+        <property name="text">
+         <string>X:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="NUD_X">
+        <property name="maximum">
+         <number>999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="L_Y">
+        <property name="text">
+         <string>Y:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="NUD_Y">
+        <property name="maximum">
+         <number>999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="L_Z">
+        <property name="text">
+         <string>Z:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="NUD_Z">
+        <property name="maximum">
+         <number>999999</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="ButtonRow">
+     <item>
+      <spacer name="ButtonSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="B_Cancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="B_Save">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

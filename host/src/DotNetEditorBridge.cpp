@@ -193,6 +193,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("AccessoryModify", &_accessoryModify);
     load("SaveAccessory", &_saveAccessory);
     load("CancelAccessory", &_cancelAccessory);
+    load("HasSaveBlock", &_hasSaveBlock);
+    load("PrepareSaveBlock", &_prepareSaveBlock);
+    load("SaveBlockModify", &_saveBlockModify);
+    load("SaveSaveBlock", &_saveSaveBlock);
+    load("CancelSaveBlock", &_cancelSaveBlock);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -579,6 +584,35 @@ bool DotNetEditorBridge::cancelAccessory()
     if (_cancelAccessory == nullptr)
         return false;
     return _cancelAccessory(nullptr, 0) == 0;
+}
+
+bool DotNetEditorBridge::hasSaveBlock() const
+{
+    if (_hasSaveBlock == nullptr)
+        return false;
+    return _hasSaveBlock(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::saveBlockDocument(const QString &page)
+{
+    return readText(_prepareSaveBlock, page.isEmpty() ? QStringLiteral("trainer") : page);
+}
+
+QString DotNetEditorBridge::saveBlockModify(const QString &action, const QString &json)
+{
+    return readText(_saveBlockModify, action + QLatin1Char('\n') + json);
+}
+
+bool DotNetEditorBridge::saveSaveBlock(const QString &json)
+{
+    return call(_saveSaveBlock, json);
+}
+
+bool DotNetEditorBridge::cancelSaveBlock()
+{
+    if (_cancelSaveBlock == nullptr)
+        return false;
+    return _cancelSaveBlock(nullptr, 0) == 0;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const
