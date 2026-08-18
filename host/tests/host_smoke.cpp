@@ -8,6 +8,7 @@
 #include "SaveBlockWindow.h"
 #include "BatchWindow.h"
 #include "BoxExportWindow.h"
+#include "EncounterDatabaseWindow.h"
 #include "PkmDatabaseWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
@@ -448,6 +449,21 @@ public:
     }
 
     bool loadPkmDatabaseHit(int) override
+    {
+        return true;
+    }
+
+    QString encounterDocument() override
+    {
+        return QStringLiteral("{\"speciesChoices\":\"0\\tAny\\n1\\tBulbasaur\",\"moveChoices\":\"0\\tAny\",\"versionChoices\":\"0\\tAny\",\"count\":1,\"hits\":[{\"index\":0,\"species\":1,\"form\":0,\"fingerprint\":\"x\",\"summary\":\"y\"}]}");
+    }
+
+    QString searchEncounters(const QString &) override
+    {
+        return encounterDocument();
+    }
+
+    bool loadEncounter(int) override
     {
         return true;
     }
@@ -923,6 +939,34 @@ int main(int argc, char *argv[])
         {
             std::cerr << "pkm database missing " << name.toStdString() << "\n";
             return 55;
+        }
+    }
+
+    EncounterDatabaseWindow encDialog(&window);
+    encDialog.loadDocument(editor.encounterDocument());
+    const QStringList encNames{
+        QStringLiteral("B_Search"),
+        QStringLiteral("B_Reset"),
+        QStringLiteral("L_Count"),
+        QStringLiteral("CB_Species"),
+        QStringLiteral("CB_Move1"),
+        QStringLiteral("CB_Move2"),
+        QStringLiteral("CB_Move3"),
+        QStringLiteral("CB_Move4"),
+        QStringLiteral("CB_GameOrigin"),
+        QStringLiteral("CHK_Shiny"),
+        QStringLiteral("CHK_IsEgg"),
+        QStringLiteral("TypeFilters"),
+        QStringLiteral("EncounterPokeGrid"),
+        QStringLiteral("TC_SearchOptions"),
+        QStringLiteral("Tab_General"),
+    };
+    for (const auto &name : encNames)
+    {
+        if (encDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "encounter database missing " << name.toStdString() << "\n";
+            return 56;
         }
     }
 

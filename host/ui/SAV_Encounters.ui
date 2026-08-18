@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SAV_Encounters</class>
+ <widget class="QDialog" name="SAV_Encounters">
+  <property name="windowTitle">
+   <string>Database</string>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>720</width>
+    <height>460</height>
+   </size>
+  </property>
+  <layout class="QHBoxLayout" name="Workspace">
+   <item>
+    <widget class="QWidget" name="P_Results">
+     <layout class="QVBoxLayout" name="ResultsCol">
+      <item>
+       <widget class="QLabel" name="L_Count">
+        <property name="text">
+         <string>Ready...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="EncounterPokeGrid">
+        <property name="columnCount">
+         <number>1</number>
+        </property>
+        <column>
+         <property name="text">
+          <string>Encounter</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="L_Viewed">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="FilterRail">
+     <item>
+      <widget class="QTabWidget" name="TC_SearchOptions">
+       <widget class="QWidget" name="Tab_General">
+        <attribute name="title">
+         <string>General</string>
+        </attribute>
+        <layout class="QFormLayout" name="TLP_Filters">
+         <item row="0" column="0">
+          <widget class="QLabel" name="Label_Species">
+           <property name="text">
+            <string>Species:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="CB_Species"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="L_Move1">
+           <property name="text">
+            <string>Move 1:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="CB_Move1"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="L_Move2">
+           <property name="text">
+            <string>Move 2:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="CB_Move2"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="L_Move3">
+           <property name="text">
+            <string>Move 3:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="CB_Move3"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="L_Move4">
+           <property name="text">
+            <string>Move 4:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="CB_Move4"/>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="L_Version">
+           <property name="text">
+            <string>OT Version:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QComboBox" name="CB_GameOrigin"/>
+         </item>
+         <item row="6" column="0">
+          <widget class="QCheckBox" name="CHK_Shiny">
+           <property name="text">
+            <string>Shiny</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QCheckBox" name="CHK_IsEgg">
+           <property name="text">
+            <string>Egg</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0" colspan="2">
+          <widget class="QWidget" name="TypeFilters">
+           <layout class="QGridLayout" name="TypeGrid">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="Egg">
+              <property name="text">
+               <string>Egg</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="Mystery">
+              <property name="text">
+               <string>Mystery</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="Static">
+              <property name="text">
+               <string>Static</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="Trade">
+              <property name="text">
+               <string>Trade</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="Slot">
+              <property name="text">
+               <string>Slot</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Tab_Advanced">
+        <attribute name="title">
+         <string>Advanced</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="AdvancedLayout">
+         <item>
+          <widget class="QPlainTextEdit" name="RTB_Instructions"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="SearchRow">
+       <item>
+        <widget class="QPushButton" name="B_Search">
+         <property name="text">
+          <string>Search!</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="B_Reset">
+         <property name="text">
+          <string>Reset Filters</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

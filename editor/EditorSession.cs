@@ -13,6 +13,7 @@ public sealed class EditorSession
     public byte[] CurrentEntity { get; private set; } = [];
 
     public bool HasBox => _sav.HasBox;
+    internal SaveFile SaveFile => _sav;
     public int BoxCount => _sav.BoxCount;
     public int BoxSlotCount => _sav.BoxSlotCount;
     public int PartySlotCount => 6;
@@ -35,6 +36,8 @@ public sealed class EditorSession
     private EntityAccessoryEditor? _accessory;
     private SaveBlockEditor? _saveBlock;
     private PkmDatabase? _pkmDatabase;
+    private EncounterDatabase? _encounters;
+    private EncounterDatabaseQuery _encounterQuery = new();
 
     private EditorSession(SaveFile sav)
     {
@@ -305,6 +308,21 @@ public sealed class EditorSession
 
     private PkmDatabase RequirePkmDatabase()
         => _pkmDatabase ?? throw new InvalidOperationException("PKM database is not open.");
+
+    public IReadOnlyList<EncounterDatabaseHit> SearchEncounters(EncounterDatabaseQuery query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        _encounterQuery = query;
+        _encounters ??= new EncounterDatabase();
+        return _encounters.Search(_sav, query);
+    }
+
+    public void LoadEncounter(int index)
+    {
+        _encounters ??= new EncounterDatabase();
+        var pk = _encounters.Take(index, _sav, _current, _encounterQuery);
+        LoadCurrent(pk, _partyOrigin, _originBox, _originSlot);
+    }
 
     public byte[] Export() => Export([]);
 

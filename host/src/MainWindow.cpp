@@ -3,6 +3,7 @@
 #include "AccessoryWindow.h"
 #include "BatchWindow.h"
 #include "BoxExportWindow.h"
+#include "EncounterDatabaseWindow.h"
 #include "PkmDatabaseWindow.h"
 #include "AboutWindow.h"
 #include "EditorBridge.h"
@@ -85,6 +86,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     connect(_ui->Menu_DumpBoxes, &QAction::triggered, this, &MainWindow::onDumpBoxes);
     connect(_ui->Menu_DumpBox, &QAction::triggered, this, &MainWindow::onDumpBox);
     connect(_ui->Menu_Database, &QAction::triggered, this, &MainWindow::onOpenPkmDatabase);
+    connect(_ui->Menu_EncDatabase, &QAction::triggered, this, &MainWindow::onOpenEncounterDatabase);
     updateExportEnabled();
 }
 
@@ -219,6 +221,7 @@ void MainWindow::updateExportEnabled()
     _ui->Menu_DumpBoxes->setEnabled(open && _editor.hasBox());
     _ui->Menu_DumpBox->setEnabled(open && _editor.hasBox());
     _ui->Menu_Database->setEnabled(open);
+    _ui->Menu_EncDatabase->setEnabled(open);
     if (auto *qr = findChild<QAction *>(QStringLiteral("mnuLQR")))
         qr->setEnabled(open);
 }
@@ -310,6 +313,26 @@ void MainWindow::onOpenPkmDatabase()
         if (!_editor.loadPkmDatabaseHit(index))
         {
             QMessageBox::warning(this, windowTitle(), tr("Could not convert that Pokémon to this save."));
+            return;
+        }
+        refreshPkmEditor();
+    });
+    dialog.exec();
+}
+
+void MainWindow::onOpenEncounterDatabase()
+{
+    if (!_editor.hasSession())
+        return;
+    EncounterDatabaseWindow dialog(this);
+    dialog.loadDocument(_editor.encounterDocument());
+    connect(&dialog, &EncounterDatabaseWindow::searchRequested, this, [&] {
+        dialog.loadDocument(_editor.searchEncounters(dialog.query()));
+    });
+    connect(&dialog, &EncounterDatabaseWindow::loadRequested, this, [&](int index) {
+        if (!_editor.loadEncounter(index))
+        {
+            QMessageBox::warning(this, windowTitle(), tr("Could not convert that encounter to this save."));
             return;
         }
         refreshPkmEditor();

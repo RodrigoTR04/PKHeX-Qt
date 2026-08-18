@@ -208,6 +208,9 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PreparePkmDatabase", &_preparePkmDatabase);
     load("SearchPkmDatabase", &_searchPkmDatabase);
     load("LoadPkmDatabaseHit", &_loadPkmDatabaseHit);
+    load("PrepareEncounterDatabase", &_prepareEncounterDatabase);
+    load("SearchEncounters", &_searchEncounters);
+    load("LoadEncounter", &_loadEncounter);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -675,6 +678,21 @@ QString DotNetEditorBridge::searchPkmDatabase(const QString &json)
 bool DotNetEditorBridge::loadPkmDatabaseHit(int index)
 {
     return call(_loadPkmDatabaseHit, QString::number(index));
+}
+
+QString DotNetEditorBridge::encounterDocument()
+{
+    return readText(_prepareEncounterDatabase, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::searchEncounters(const QString &json)
+{
+    return readText(_searchEncounters, json);
+}
+
+bool DotNetEditorBridge::loadEncounter(int index)
+{
+    return call(_loadEncounter, QString::number(index));
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

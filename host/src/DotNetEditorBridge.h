@@ -83,6 +83,9 @@ public:
     QString pkmDatabaseDocument() override;
     QString searchPkmDatabase(const QString &json) override;
     bool loadPkmDatabaseHit(int index) override;
+    QString encounterDocument() override;
+    QString searchEncounters(const QString &json) override;
+    bool loadEncounter(int index) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -171,4 +174,7 @@ private:
     component_entry_point_fn _preparePkmDatabase{};
     component_entry_point_fn _searchPkmDatabase{};
     component_entry_point_fn _loadPkmDatabaseHit{};
+    component_entry_point_fn _prepareEncounterDatabase{};
+    component_entry_point_fn _searchEncounters{};
+    component_entry_point_fn _loadEncounter{};
 };

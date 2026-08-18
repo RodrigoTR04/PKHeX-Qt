@@ -363,6 +363,9 @@
    <property name="text">
     <string>E&amp;ncounter Database</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="Menu_BatchEditor">
    <property name="text">

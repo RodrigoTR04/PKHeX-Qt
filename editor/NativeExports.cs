@@ -1105,6 +1105,54 @@ public static class NativeExports
         }
     }
 
+    public static int PrepareEncounterDatabase(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            var session = RequireSession();
+            _preparedText = EncounterDatabaseWire.Document(session.SaveFile, []);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SearchEncounters(IntPtr arg, int size)
+    {
+        try
+        {
+            var session = RequireSession();
+            var hits = session.SearchEncounters(EncounterDatabaseWire.Parse(ReadUtf8AllowEmpty(arg, size)));
+            _preparedText = EncounterDatabaseWire.Document(session.SaveFile, hits);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int LoadEncounter(IntPtr arg, int size)
+    {
+        try
+        {
+            if (!int.TryParse(ReadUtf8(arg, size), out var index))
+                return 1;
+            RequireSession().LoadEncounter(index);
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     private static byte[]? _preparedPng;
     private static string? _preparedText;
 

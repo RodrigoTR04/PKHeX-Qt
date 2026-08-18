@@ -89,4 +89,7 @@ public:
     virtual QString pkmDatabaseDocument() = 0;
     virtual QString searchPkmDatabase(const QString &json) = 0;
     virtual bool loadPkmDatabaseHit(int index) = 0;
+    virtual QString encounterDocument() = 0;
+    virtual QString searchEncounters(const QString &json) = 0;
+    virtual bool loadEncounter(int index) = 0;
 };
