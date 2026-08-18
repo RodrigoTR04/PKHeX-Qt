@@ -58,6 +58,7 @@ private slots:
     void onShowdownExportParty();
     void onShowdownExportBox();
     void onMenuAbout();
+    void onOpenBatch();
     void onOpenInventory();
     void onOpenPokedex();
     void onOpenSaveBlock();

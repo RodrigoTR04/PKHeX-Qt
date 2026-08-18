@@ -80,4 +80,6 @@ public:
     virtual QString saveBlockModify(const QString &action, const QString &json) = 0;
     virtual bool saveSaveBlock(const QString &json) = 0;
     virtual bool cancelSaveBlock() = 0;
+    virtual QString batchProperties() = 0;
+    virtual QString runBatch(const QString &scope, const QString &instructions) = 0;
 };

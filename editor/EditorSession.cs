@@ -250,6 +250,16 @@ public sealed class EditorSession
         SaveSaveBlock();
     }
 
+    public readonly record struct BatchRunResult(bool Ok, string Message);
+
+    public BatchRunResult RunBatch(string scope, string instructions)
+    {
+        var result = SaveBatchEditor.Run(_sav, scope, instructions);
+        if (result.Ok)
+            _sav.State.Edited = true;
+        return new BatchRunResult(result.Ok, result.Message);
+    }
+
     public byte[] Export() => Export([]);
 
     public byte[] Export(IReadOnlyList<EditorOperation> operations)

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BatchEditor</class>
+ <widget class="QDialog" name="BatchEditor">
+  <property name="windowTitle">
+   <string>Batch Editor</string>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>340</height>
+   </size>
+  </property>
+  <layout class="QVBoxLayout" name="BatchRoot">
+   <item>
+    <widget class="QWidget" name="FLP_RB">
+     <layout class="QHBoxLayout" name="ScopeRow">
+      <item>
+       <widget class="QRadioButton" name="RB_Boxes">
+        <property name="text">
+         <string>Boxes</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="RB_Party">
+        <property name="text">
+         <string>Party</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="RB_Path">
+        <property name="text">
+         <string>Folder...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="TB_Folder">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="AddRow">
+     <item>
+      <widget class="QComboBox" name="CB_Property"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="B_Add">
+       <property name="text">
+        <string>Add</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="RTB_Instructions"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="RunRow">
+     <item>
+      <widget class="QProgressBar" name="PB_Show"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="B_Go">
+       <property name="text">
+        <string>Run</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

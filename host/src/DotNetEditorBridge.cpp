@@ -199,6 +199,8 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("SaveBlockModify", &_saveBlockModify);
     load("SaveSaveBlock", &_saveSaveBlock);
     load("CancelSaveBlock", &_cancelSaveBlock);
+    load("PrepareBatchProperties", &_prepareBatchProperties);
+    load("RunBatch", &_runBatch);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -619,6 +621,16 @@ bool DotNetEditorBridge::cancelSaveBlock()
     if (_cancelSaveBlock == nullptr)
         return false;
     return _cancelSaveBlock(nullptr, 0) == 0;
+}
+
+QString DotNetEditorBridge::batchProperties()
+{
+    return readText(_prepareBatchProperties, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::runBatch(const QString &scope, const QString &instructions)
+{
+    return readText(_runBatch, scope + QLatin1Char('\n') + instructions);
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

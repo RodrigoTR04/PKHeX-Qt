@@ -6,6 +6,7 @@
 #include "InventoryWindow.h"
 #include "PokedexWindow.h"
 #include "SaveBlockWindow.h"
+#include "BatchWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
 
@@ -403,6 +404,16 @@ public:
     {
         return true;
     }
+
+    QString batchProperties() override
+    {
+        return QStringLiteral("Nickname\nSpecies");
+    }
+
+    QString runBatch(const QString &, const QString &) override
+    {
+        return QStringLiteral("ok\nModified.");
+    }
 };
 
 int main(int argc, char *argv[])
@@ -469,6 +480,7 @@ int main(int argc, char *argv[])
         QStringLiteral("Menu_Options"),
         QStringLiteral("Menu_Save"),
         QStringLiteral("Menu_About"),
+        QStringLiteral("Menu_BatchEditor"),
     };
     for (const auto &name : required)
     {
@@ -815,6 +827,25 @@ int main(int argc, char *argv[])
         {
             std::cerr << "misc missing " << name.toStdString() << "\n";
             return 52;
+        }
+    }
+
+    BatchWindow batchDialog(&window);
+    batchDialog.setProperties(editor.batchProperties());
+    const QStringList batchNames{
+        QStringLiteral("B_Go"),
+        QStringLiteral("B_Add"),
+        QStringLiteral("RTB_Instructions"),
+        QStringLiteral("RB_Boxes"),
+        QStringLiteral("RB_Party"),
+        QStringLiteral("PB_Show"),
+    };
+    for (const auto &name : batchNames)
+    {
+        if (batchDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "batch missing " << name.toStdString() << "\n";
+            return 53;
         }
     }
 

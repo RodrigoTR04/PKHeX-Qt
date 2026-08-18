@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include "AccessoryWindow.h"
+#include "BatchWindow.h"
 #include "AboutWindow.h"
 #include "EditorBridge.h"
 #include "InventoryWindow.h"
@@ -78,6 +79,7 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     connect(_ui->Menu_ShowdownExportParty, &QAction::triggered, this, &MainWindow::onShowdownExportParty);
     connect(_ui->Menu_ShowdownExportCurrentBox, &QAction::triggered, this, &MainWindow::onShowdownExportBox);
     connect(_ui->Menu_About, &QAction::triggered, this, &MainWindow::onMenuAbout);
+    connect(_ui->Menu_BatchEditor, &QAction::triggered, this, &MainWindow::onOpenBatch);
     updateExportEnabled();
 }
 
@@ -221,6 +223,32 @@ void MainWindow::onMenuExit()
 void MainWindow::onMenuAbout()
 {
     AboutWindow dialog(this);
+    dialog.exec();
+}
+
+void MainWindow::onOpenBatch()
+{
+    if (!_editor.hasSession())
+        return;
+    BatchWindow dialog(this);
+    dialog.setProperties(_editor.batchProperties());
+    connect(&dialog, &BatchWindow::runRequested, this, [&] {
+        if (dialog.scope() == QLatin1String("folder"))
+        {
+            QMessageBox::information(this, windowTitle(), tr("Folder batch edits are not available yet."));
+            return;
+        }
+        const QString raw = _editor.runBatch(dialog.scope(), dialog.instructions());
+        const auto split = raw.indexOf(QLatin1Char('\n'));
+        const QString kind = split < 0 ? raw : raw.left(split);
+        const QString message = split < 0 ? raw : raw.mid(split + 1);
+        if (kind == QLatin1String("ok"))
+            QMessageBox::information(this, windowTitle(), message);
+        else
+            QMessageBox::warning(this, windowTitle(), message.isEmpty() ? tr("Could not run those instructions.") : message);
+        refreshStorage();
+        refreshPkmEditor();
+    });
     dialog.exec();
 }
 

@@ -74,6 +74,8 @@ public:
     QString saveBlockModify(const QString &action, const QString &json) override;
     bool saveSaveBlock(const QString &json) override;
     bool cancelSaveBlock() override;
+    QString batchProperties() override;
+    QString runBatch(const QString &scope, const QString &instructions) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -153,4 +155,6 @@ private:
     component_entry_point_fn _saveBlockModify{};
     component_entry_point_fn _saveSaveBlock{};
     component_entry_point_fn _cancelSaveBlock{};
+    component_entry_point_fn _prepareBatchProperties{};
+    component_entry_point_fn _runBatch{};
 };

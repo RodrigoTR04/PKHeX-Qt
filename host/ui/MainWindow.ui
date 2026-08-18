@@ -365,6 +365,9 @@
    <property name="text">
     <string>&amp;Batch Editor</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
   </action>
   <action name="Menu_Folder">
    <property name="text">
