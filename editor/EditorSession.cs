@@ -225,10 +225,14 @@ public sealed class EditorSession
         _saveBlock = null;
     }
 
+    public string SaveBlockPages() => string.Join('\n', SaveBlockEditor.PageIdsFor(_sav));
+
     public string SaveBlockDocument(string page)
     {
         OpenSaveBlock();
-        SaveBlock.Select(string.IsNullOrWhiteSpace(page) || page == "-" ? "trainer" : page);
+        if (string.IsNullOrWhiteSpace(page) || page == "-")
+            page = SaveBlock.PageIds.Contains("trainer") ? "trainer" : SaveBlock.PageIds.First();
+        SaveBlock.Select(page);
         return SaveBlock.ToJson();
     }
 

@@ -868,6 +868,22 @@ public static class NativeExports
         }
     }
 
+    public static int PrepareSaveBlockPages(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().SaveBlockPages();
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
     public static int PrepareSaveBlock(IntPtr arg, int size)
     {
         try

@@ -368,13 +368,25 @@ public:
         return true;
     }
 
-    QString saveBlockDocument(const QString &) override
+    QString saveBlockDocument(const QString &page) override
     {
+        if (page == QLatin1String("flags"))
+        {
+            return QStringLiteral(
+                "{\"page\":\"flags\",\"kind\":\"flags\",\"langForm\":\"SAV_EventFlags\",\"flagCount\":8,\"workCount\":1,"
+                "\"customFlag\":0,\"customFlagValue\":false,\"flags\":[{\"index\":0,\"name\":\"Test Flag\",\"value\":false}],"
+                "\"work\":[{\"index\":0,\"name\":\"Test Work\",\"value\":0}]}");
+        }
         return QStringLiteral(
             "{\"page\":\"trainer\",\"langForm\":\"SAV_SimpleTrainer\",\"ot\":\"RED\",\"gender\":0,"
             "\"tid\":12345,\"sid\":0,\"money\":3000,\"coins\":0,\"hours\":0,\"minutes\":0,\"seconds\":0,"
             "\"badges\":0,\"badgeCount\":8,\"hasGender\":false,\"hasSid\":false,\"hasCoins\":true,"
             "\"hasCountry\":false,\"hasMap\":false,\"hasOptions\":true,\"hasPika\":false}");
+    }
+
+    QString saveBlockPages() override
+    {
+        return QStringLiteral("trainer\nflags");
     }
 
     QString saveBlockModify(const QString &, const QString &json) override
@@ -764,6 +776,25 @@ int main(int argc, char *argv[])
     {
         std::cerr << "trainer OT was " << (trainerOt ? trainerOt->text().toStdString() : "null") << "\n";
         return 50;
+    }
+
+    SaveBlockWindow flagsDialog(&window);
+    flagsDialog.loadDocument(editor.saveBlockDocument(QStringLiteral("flags")));
+    const QStringList flagNames{
+        QStringLiteral("B_Save"),
+        QStringLiteral("B_Cancel"),
+        QStringLiteral("TLP_Flags"),
+        QStringLiteral("NUD_Flag"),
+        QStringLiteral("c_CustomFlag"),
+        QStringLiteral("GB_Flags"),
+    };
+    for (const auto &name : flagNames)
+    {
+        if (flagsDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "flags missing " << name.toStdString() << "\n";
+            return 51;
+        }
     }
 
     return 0;

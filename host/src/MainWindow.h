@@ -61,6 +61,7 @@ private slots:
     void onOpenInventory();
     void onOpenPokedex();
     void onOpenSaveBlock();
+    void onOpenEventFlags();
     void openAccessoryPage(const QString &page);
     void clickQr();
     void importQrFromClipboard();
@@ -72,6 +73,7 @@ private:
     void fillSavChrome();
     void fillSlotChrome();
     void fillPkmChrome();
+    void openSaveBlockPage(const QString &page);
     void bindPkmFields();
     void bindPkmContextMenu();
     void refreshStorage();

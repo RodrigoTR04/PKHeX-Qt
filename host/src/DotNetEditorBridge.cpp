@@ -195,6 +195,7 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("CancelAccessory", &_cancelAccessory);
     load("HasSaveBlock", &_hasSaveBlock);
     load("PrepareSaveBlock", &_prepareSaveBlock);
+    load("PrepareSaveBlockPages", &_prepareSaveBlockPages);
     load("SaveBlockModify", &_saveBlockModify);
     load("SaveSaveBlock", &_saveSaveBlock);
     load("CancelSaveBlock", &_cancelSaveBlock);
@@ -596,6 +597,11 @@ bool DotNetEditorBridge::hasSaveBlock() const
 QString DotNetEditorBridge::saveBlockDocument(const QString &page)
 {
     return readText(_prepareSaveBlock, page.isEmpty() ? QStringLiteral("trainer") : page);
+}
+
+QString DotNetEditorBridge::saveBlockPages()
+{
+    return readText(_prepareSaveBlockPages, QStringLiteral("-"));
 }
 
 QString DotNetEditorBridge::saveBlockModify(const QString &action, const QString &json)

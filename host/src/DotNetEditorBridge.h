@@ -70,6 +70,7 @@ public:
     bool cancelAccessory() override;
     bool hasSaveBlock() const override;
     QString saveBlockDocument(const QString &page) override;
+    QString saveBlockPages() override;
     QString saveBlockModify(const QString &action, const QString &json) override;
     bool saveSaveBlock(const QString &json) override;
     bool cancelSaveBlock() override;
@@ -148,6 +149,7 @@ private:
     component_entry_point_fn _cancelAccessory{};
     component_entry_point_fn _hasSaveBlock{};
     component_entry_point_fn _prepareSaveBlock{};
+    component_entry_point_fn _prepareSaveBlockPages{};
     component_entry_point_fn _saveBlockModify{};
     component_entry_point_fn _saveSaveBlock{};
     component_entry_point_fn _cancelSaveBlock{};

@@ -27,6 +27,8 @@ signals:
 
 private:
     void fillTrainer(const QJsonObject &root);
+    void fillFlags(const QJsonObject &root);
+    void setTrainerVisible(bool visible);
     QJsonObject collectDocument() const;
 
     std::unique_ptr<Ui::SAV_SimpleTrainer> _ui;

@@ -19,9 +19,24 @@ public sealed class SaveBlockEditor
         _snapshot = origin.Data.ToArray();
         if (SimpleTrainerPage.Supports(origin))
             Register(new SimpleTrainerPage(origin));
+        if (EventFlagsPage.TryCreate(origin) is { } flags)
+            Register(flags);
+        if (_pages.Count > 0 && !_pages.ContainsKey(_active))
+            _active = _pages.Keys.First();
     }
 
-    public static bool Supports(SaveFile sav) => SimpleTrainerPage.Supports(sav);
+    public static bool Supports(SaveFile sav) => PageIdsFor(sav).Count > 0;
+
+    public static IReadOnlyList<string> PageIdsFor(SaveFile sav)
+    {
+        ArgumentNullException.ThrowIfNull(sav);
+        var ids = new List<string>();
+        if (SimpleTrainerPage.Supports(sav))
+            ids.Add("trainer");
+        if (EventFlagsPage.Supports(sav))
+            ids.Add("flags");
+        return ids;
+    }
 
     public static SaveBlockEditor Open(SaveFile sav)
     {

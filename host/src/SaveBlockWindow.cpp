@@ -7,11 +7,15 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDir>
+#include <QHeaderView>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 #include <QtGlobal>
 #include <QVariant>
 
@@ -41,6 +45,7 @@ SaveBlockWindow::SaveBlockWindow(QWidget *parent)
     LangCatalog catalog;
     catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
     catalog.apply(this, QStringLiteral("SAV_SimpleTrainer"));
+    setTrainerVisible(true);
 }
 
 SaveBlockWindow::~SaveBlockWindow() = default;
@@ -48,12 +53,31 @@ SaveBlockWindow::~SaveBlockWindow() = default;
 void SaveBlockWindow::loadDocument(const QString &json)
 {
     const auto root = QJsonDocument::fromJson(json.toUtf8()).object();
-    fillTrainer(root);
+    const QString page = root.value(QStringLiteral("page")).toString();
+    if (page == QLatin1String("flags") || root.value(QStringLiteral("kind")).toString() == QLatin1String("flags"))
+        fillFlags(root);
+    else
+        fillTrainer(root);
     setProperty("saveBlockRoot", QVariant::fromValue(root));
+}
+
+void SaveBlockWindow::setTrainerVisible(bool visible)
+{
+    _ui->GB_Trainer->setVisible(visible);
+    _ui->GB_Adventure->setVisible(visible);
+    _ui->GB_Badges->setVisible(visible);
+    _ui->GB_Options->setVisible(visible);
+    _ui->GB_Map->setVisible(visible);
+    _ui->B_MaxCash->setVisible(visible);
+    _ui->B_MaxCoins->setVisible(visible);
+    _ui->GB_Flags->setVisible(!visible);
+    _ui->GB_FlagStatus->setVisible(!visible);
+    _ui->GB_Constants->setVisible(!visible);
 }
 
 void SaveBlockWindow::fillTrainer(const QJsonObject &root)
 {
+    setTrainerVisible(true);
     _mapEdited = false;
     _ui->TB_OTName->setText(root.value(QStringLiteral("ot")).toString());
     _ui->CB_Gender->setCurrentIndex(root.value(QStringLiteral("gender")).toInt());
@@ -125,9 +149,95 @@ void SaveBlockWindow::fillTrainer(const QJsonObject &root)
     catalog.apply(this, root.value(QStringLiteral("langForm")).toString(QStringLiteral("SAV_SimpleTrainer")));
 }
 
+void SaveBlockWindow::fillFlags(const QJsonObject &root)
+{
+    setTrainerVisible(false);
+    auto *flags = _ui->TLP_Flags;
+    flags->horizontalHeader()->setVisible(false);
+    flags->verticalHeader()->setVisible(false);
+    flags->setShowGrid(false);
+    flags->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    const auto flagRows = root.value(QStringLiteral("flags")).toArray();
+    flags->setRowCount(flagRows.size());
+    for (int i = 0; i < flagRows.size(); ++i)
+    {
+        const auto row = flagRows.at(i).toObject();
+        auto *check = new QCheckBox(flags);
+        check->setChecked(row.value(QStringLiteral("value")).toBool());
+        flags->setCellWidget(i, 0, check);
+        auto *label = new QTableWidgetItem(row.value(QStringLiteral("name")).toString());
+        label->setFlags(label->flags() & ~Qt::ItemIsEditable);
+        label->setData(Qt::UserRole, row.value(QStringLiteral("index")).toInt());
+        flags->setItem(i, 1, label);
+    }
+    auto *work = _ui->TLP_Const;
+    work->horizontalHeader()->setVisible(false);
+    work->verticalHeader()->setVisible(false);
+    work->setShowGrid(false);
+    work->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    const auto workRows = root.value(QStringLiteral("work")).toArray();
+    work->setRowCount(workRows.size());
+    for (int i = 0; i < workRows.size(); ++i)
+    {
+        const auto row = workRows.at(i).toObject();
+        auto *spin = new QSpinBox(work);
+        spin->setMaximum(65535);
+        spin->setValue(row.value(QStringLiteral("value")).toInt());
+        work->setCellWidget(i, 0, spin);
+        auto *label = new QTableWidgetItem(row.value(QStringLiteral("name")).toString());
+        label->setFlags(label->flags() & ~Qt::ItemIsEditable);
+        label->setData(Qt::UserRole, row.value(QStringLiteral("index")).toInt());
+        work->setItem(i, 1, label);
+    }
+    _ui->NUD_Flag->setMaximum(qMax(0, root.value(QStringLiteral("flagCount")).toInt() - 1));
+    _ui->NUD_Flag->setValue(root.value(QStringLiteral("customFlag")).toInt());
+    _ui->c_CustomFlag->setChecked(root.value(QStringLiteral("customFlagValue")).toBool());
+    _ui->CB_Stats->setMaximum(qMax(0, root.value(QStringLiteral("workCount")).toInt() - 1));
+    _ui->CB_Stats->setValue(root.value(QStringLiteral("customWork")).toInt());
+    _ui->MT_Stat->setValue(root.value(QStringLiteral("customWorkValue")).toInt());
+    _ui->GB_Constants->setVisible(root.value(QStringLiteral("workCount")).toInt() > 0);
+    LangCatalog catalog;
+    catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
+    catalog.apply(this, root.value(QStringLiteral("langForm")).toString(QStringLiteral("SAV_EventFlags")));
+}
+
 QJsonObject SaveBlockWindow::collectDocument() const
 {
     QJsonObject root = property("saveBlockRoot").toJsonObject();
+    if (root.value(QStringLiteral("page")).toString() == QLatin1String("flags"))
+    {
+        QJsonArray flagRows;
+        for (int i = 0; i < _ui->TLP_Flags->rowCount(); ++i)
+        {
+            const auto *label = _ui->TLP_Flags->item(i, 1);
+            if (label == nullptr)
+                continue;
+            QJsonObject row;
+            row.insert(QStringLiteral("index"), label->data(Qt::UserRole).toInt());
+            auto *check = qobject_cast<QCheckBox *>(_ui->TLP_Flags->cellWidget(i, 0));
+            row.insert(QStringLiteral("value"), check != nullptr && check->isChecked());
+            flagRows.append(row);
+        }
+        QJsonArray workRows;
+        for (int i = 0; i < _ui->TLP_Const->rowCount(); ++i)
+        {
+            const auto *label = _ui->TLP_Const->item(i, 1);
+            if (label == nullptr)
+                continue;
+            QJsonObject row;
+            row.insert(QStringLiteral("index"), label->data(Qt::UserRole).toInt());
+            auto *spin = qobject_cast<QSpinBox *>(_ui->TLP_Const->cellWidget(i, 0));
+            row.insert(QStringLiteral("value"), spin == nullptr ? 0 : spin->value());
+            workRows.append(row);
+        }
+        root.insert(QStringLiteral("flags"), flagRows);
+        root.insert(QStringLiteral("work"), workRows);
+        root.insert(QStringLiteral("customFlag"), _ui->NUD_Flag->value());
+        root.insert(QStringLiteral("customFlagValue"), _ui->c_CustomFlag->isChecked());
+        root.insert(QStringLiteral("customWork"), _ui->CB_Stats->value());
+        root.insert(QStringLiteral("customWorkValue"), _ui->MT_Stat->value());
+        return root;
+    }
     root.insert(QStringLiteral("ot"), _ui->TB_OTName->text());
     root.insert(QStringLiteral("gender"), _ui->CB_Gender->currentIndex());
     root.insert(QStringLiteral("tid"), _ui->MT_TID->value());

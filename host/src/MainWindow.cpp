@@ -282,6 +282,8 @@ void MainWindow::fillSavChrome()
         connect(dex, &QPushButton::clicked, this, &MainWindow::onOpenPokedex);
     if (auto *trainer = findChild<QPushButton *>(QStringLiteral("B_OpenTrainerInfo")))
         connect(trainer, &QPushButton::clicked, this, &MainWindow::onOpenSaveBlock);
+    if (auto *flags = findChild<QPushButton *>(QStringLiteral("B_OpenEventFlags")))
+        connect(flags, &QPushButton::clicked, this, &MainWindow::onOpenEventFlags);
 }
 
 void MainWindow::onOpenInventory()
@@ -316,10 +318,23 @@ void MainWindow::onOpenPokedex()
 
 void MainWindow::onOpenSaveBlock()
 {
+    openSaveBlockPage(QStringLiteral("trainer"));
+}
+
+void MainWindow::onOpenEventFlags()
+{
+    openSaveBlockPage(QStringLiteral("flags"));
+}
+
+void MainWindow::openSaveBlockPage(const QString &page)
+{
     if (!_editor.hasSession() || !_editor.hasSaveBlock())
         return;
+    const auto pages = _editor.saveBlockPages().split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    if (!pages.contains(page))
+        return;
     SaveBlockWindow dialog(this);
-    dialog.loadDocument(_editor.saveBlockDocument(QStringLiteral("trainer")));
+    dialog.loadDocument(_editor.saveBlockDocument(page));
     connect(&dialog, &SaveBlockWindow::modifyRequested, this, [&](const QString &action) {
         const QString next = _editor.saveBlockModify(action, dialog.document());
         if (!next.isEmpty())
