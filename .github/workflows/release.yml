@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   linux-x64:
     runs-on: ubuntu-24.04
@@ -23,7 +26,8 @@ jobs:
             cmake ninja-build g++ pkg-config \
             qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
             libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev \
-            libxcb-cursor0 libxkbcommon-x11-0
+            libxcb-cursor0 libxkbcommon-x11-0 \
+            wget imagemagick
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DPKHEXQT_SELF_CONTAINED=ON
@@ -43,22 +47,44 @@ jobs:
       - name: Check folder artifact
         run: host/scripts/check-release.sh dist/pkhex-qt-linux-x64
 
-      - name: Launch without a .NET SDK
+      - name: Pack AppImage
+        run: host/scripts/pack-appimage.sh dist/pkhex-qt-linux-x64 dist/PKHeX_Qt-x86_64.AppImage
+
+      - name: Check AppImage
+        run: host/scripts/check-appimage.sh dist/PKHeX_Qt-x86_64.AppImage
+
+      - name: Launch AppImage without a .NET SDK
         run: |
           unset DOTNET_ROOT
           export PATH=/usr/bin:/bin
           export QT_QPA_PLATFORM=offscreen
+          export APPIMAGE_EXTRACT_AND_RUN=1
           set +e
-          timeout 8 dist/pkhex-qt-linux-x64/pkhex-qt
+          timeout 8 dist/PKHeX_Qt-x86_64.AppImage
           status=$?
           set -e
           if [ "$status" -eq 124 ] || [ "$status" -eq 0 ]; then
             exit 0
           fi
-          echo "packed host exited $status"
+          echo "AppImage host exited $status"
           exit 1
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pkhex-qt-linux-x64
-          path: dist/pkhex-qt-linux-x64
+          name: PKHeX_Qt-x86_64.AppImage
+          path: dist/PKHeX_Qt-x86_64.AppImage
+
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PKHeX Qt ${{ github.ref_name }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: dist/PKHeX_Qt-x86_64.AppImage
+          body: |
+            Incomplete public build. This is not v1.
+
+            Linux x86_64 AppImage. `chmod +x PKHeX_Qt-x86_64.AppImage` and run it. No .NET SDK, no distro Qt package.
+
+            Open, edit, and save work. Subforms are still missing. GPL-3.0-or-later. Source is this tag.

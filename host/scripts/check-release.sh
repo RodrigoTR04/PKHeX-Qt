@@ -18,6 +18,7 @@ need() {
 }
 
 need pkhex-qt
+need LICENSE
 need libnethost.so
 need qt.conf
 need lang/lang_en.txt

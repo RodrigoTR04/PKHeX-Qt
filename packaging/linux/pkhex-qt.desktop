@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PKHeX Qt
+Comment=Unofficial independent PKHeX port
+Exec=pkhex-qt
+Icon=pkhex-qt
+Terminal=false
+Categories=Utility;
+StartupWMClass=pkhex-qt

@@ -11,6 +11,7 @@ if [ -z "$build_dir" ] || [ -z "$dest" ]; then
 fi
 
 here=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+repo=$(CDPATH= cd -- "$here/../.." && pwd)
 
 if [ ! -x "$build_dir/pkhex-qt" ]; then
   echo "pkhex-qt was not built in $build_dir" >&2
@@ -21,6 +22,9 @@ rm -rf "$dest"
 mkdir -p "$dest"
 cp -a "$build_dir/pkhex-qt" "$dest/"
 cp -a "$build_dir/libnethost.so" "$dest/" 2>/dev/null || cp -a "$build_dir/nethost.dll" "$dest/" 2>/dev/null || true
+if [ -f "$repo/LICENSE" ]; then
+  cp -a "$repo/LICENSE" "$dest/"
+fi
 for dir in assets fonts lang about dotnet; do
   if [ -d "$build_dir/$dir" ]; then
     cp -a "$build_dir/$dir" "$dest/"

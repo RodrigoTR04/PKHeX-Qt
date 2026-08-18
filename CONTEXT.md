@@ -57,7 +57,7 @@ The `a_` / artwork image set already shipped inside Original PKHeX's PokeSprite 
 _Avoid_: regular sprites, official icons, PKHeX Online exclusive art (the files come from Original PKHeX), downloading sprites
 
 **Release**:
-A public binary folder built by GitHub Actions on the free tier of a public repository. The workflow is CMake (Host, Qt 6) plus `dotnet publish` (Editor layer and Core, self-contained per RID). Users do not compile Qt to use the app.
+A public Linux AppImage built by GitHub Actions on the free tier of a public repository. The workflow is CMake (Host, Qt 6) plus `dotnet publish` (Editor layer and Core, self-contained per RID), then `appimagetool` over that folder. Users download one file and do not compile Qt.
 _Avoid_: local zip as the official artifact, distro package as v1
 
 **Plugin**:
