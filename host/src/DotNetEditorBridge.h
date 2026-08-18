@@ -63,7 +63,8 @@ public:
     bool savePokedex(const QString &json) override;
     bool cancelPokedex() override;
     bool hasAccessory() const override;
-    QString accessoryDocument() override;
+    QString accessoryDocument(const QString &page) override;
+    QString accessoryPages() override;
     QString accessoryModify(const QString &action, const QString &json) override;
     bool saveAccessory(const QString &json) override;
     bool cancelAccessory() override;
@@ -136,6 +137,7 @@ private:
     component_entry_point_fn _cancelPokedex{};
     component_entry_point_fn _hasAccessory{};
     component_entry_point_fn _prepareAccessory{};
+    component_entry_point_fn _prepareAccessoryPages{};
     component_entry_point_fn _accessoryModify{};
     component_entry_point_fn _saveAccessory{};
     component_entry_point_fn _cancelAccessory{};

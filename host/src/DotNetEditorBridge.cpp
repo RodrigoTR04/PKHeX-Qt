@@ -189,6 +189,7 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("CancelPokedex", &_cancelPokedex);
     load("HasAccessory", &_hasAccessory);
     load("PrepareAccessory", &_prepareAccessory);
+    load("PrepareAccessoryPages", &_prepareAccessoryPages);
     load("AccessoryModify", &_accessoryModify);
     load("SaveAccessory", &_saveAccessory);
     load("CancelAccessory", &_cancelAccessory);
@@ -553,9 +554,14 @@ bool DotNetEditorBridge::hasAccessory() const
     return _hasAccessory(nullptr, 0) == 1;
 }
 
-QString DotNetEditorBridge::accessoryDocument()
+QString DotNetEditorBridge::accessoryDocument(const QString &page)
 {
-    return readText(_prepareAccessory, QStringLiteral("-"));
+    return readText(_prepareAccessory, page.isEmpty() ? QStringLiteral("ribbons") : page);
+}
+
+QString DotNetEditorBridge::accessoryPages()
+{
+    return readText(_prepareAccessoryPages, QStringLiteral("-"));
 }
 
 QString DotNetEditorBridge::accessoryModify(const QString &action, const QString &json)

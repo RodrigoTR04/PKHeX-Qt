@@ -27,7 +27,11 @@ signals:
 
 private:
     void fillRibbons(const QJsonObject &root);
+    void fillFlags(const QJsonObject &root);
+    void fillMemories(const QJsonObject &root);
+    void clearSidePanel();
     QJsonObject collectDocument() const;
 
     std::unique_ptr<Ui::RibbonEditor> _ui;
+    bool _closeOnBulk = false;
 };

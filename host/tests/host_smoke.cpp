@@ -334,12 +334,17 @@ public:
         return true;
     }
 
-    QString accessoryDocument() override
+    QString accessoryDocument(const QString &) override
     {
         return QStringLiteral(
             "{\"page\":\"ribbons\",\"langForm\":\"RibbonEditor\",\"hasAffixed\":false,\"affixed\":-1,"
             "\"ribbons\":[{\"name\":\"RibbonChampionSinnoh\",\"label\":\"Sinnoh Champ Ribbon\","
             "\"type\":\"bool\",\"hasRibbon\":false,\"count\":0,\"maxCount\":0}]}");
+    }
+
+    QString accessoryPages() override
+    {
+        return QStringLiteral("ribbons");
     }
 
     QString accessoryModify(const QString &, const QString &json) override
@@ -410,6 +415,11 @@ int main(int argc, char *argv[])
         QStringLiteral("B_OpenTrainerInfo"),
         QStringLiteral("B_OpenPokedex"),
         QStringLiteral("BTN_Ribbons"),
+        QStringLiteral("BTN_History"),
+        QStringLiteral("BTN_Medals"),
+        QStringLiteral("B_RelearnFlags"),
+        QStringLiteral("B_MoveShop"),
+        QStringLiteral("B_PlusRecord"),
         QStringLiteral("dragout"),
         QStringLiteral("PB_Legal"),
         QStringLiteral("splitContainer1"),
@@ -674,7 +684,7 @@ int main(int argc, char *argv[])
     }
 
     AccessoryWindow accessoryDialog(&window);
-    accessoryDialog.loadDocument(editor.accessoryDocument());
+    accessoryDialog.loadDocument(editor.accessoryDocument(QStringLiteral("ribbons")));
     const QStringList ribbonNames{
         QStringLiteral("B_Save"),
         QStringLiteral("B_Cancel"),

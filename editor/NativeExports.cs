@@ -777,11 +777,28 @@ public static class NativeExports
 
     public static int PrepareAccessory(IntPtr arg, int size)
     {
+        try
+        {
+            var page = size > 0 ? ReadUtf8(arg, size) : "ribbons";
+            if (string.IsNullOrWhiteSpace(page) || page == "-")
+                page = "ribbons";
+            _preparedText = RequireSession().AccessoryDocument(page);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int PrepareAccessoryPages(IntPtr arg, int size)
+    {
         _ = arg;
         _ = size;
         try
         {
-            _preparedText = RequireSession().AccessoryDocument();
+            _preparedText = RequireSession().AccessoryPages();
             return EncodingLength(_preparedText);
         }
         catch

@@ -311,12 +311,12 @@ void MainWindow::onOpenPokedex()
         _editor.cancelPokedex();
 }
 
-void MainWindow::onOpenAccessory()
+void MainWindow::openAccessoryPage(const QString &page)
 {
     if (!_editor.hasSession() || !_editor.hasAccessory())
         return;
     AccessoryWindow dialog(this);
-    dialog.loadDocument(_editor.accessoryDocument());
+    dialog.loadDocument(_editor.accessoryDocument(page));
     connect(&dialog, &AccessoryWindow::modifyRequested, this, [&](const QString &action) {
         const QString next = _editor.accessoryModify(action, dialog.document());
         if (!next.isEmpty())
@@ -527,7 +527,17 @@ void MainWindow::fillPkmChrome()
         findChild<QWidget *>(QStringLiteral("Tab_OTMisc")));
     bindPkmFields();
     if (auto *ribbons = findChild<QPushButton *>(QStringLiteral("BTN_Ribbons")))
-        connect(ribbons, &QPushButton::clicked, this, &MainWindow::onOpenAccessory);
+        connect(ribbons, &QPushButton::clicked, this, [this] { openAccessoryPage(QStringLiteral("ribbons")); });
+    if (auto *history = findChild<QPushButton *>(QStringLiteral("BTN_History")))
+        connect(history, &QPushButton::clicked, this, [this] { openAccessoryPage(QStringLiteral("memories")); });
+    if (auto *medals = findChild<QPushButton *>(QStringLiteral("BTN_Medals")))
+        connect(medals, &QPushButton::clicked, this, [this] { openAccessoryPage(QStringLiteral("medals")); });
+    if (auto *tech = findChild<QPushButton *>(QStringLiteral("B_RelearnFlags")))
+        connect(tech, &QPushButton::clicked, this, [this] { openAccessoryPage(QStringLiteral("tech")); });
+    if (auto *shop = findChild<QPushButton *>(QStringLiteral("B_MoveShop")))
+        connect(shop, &QPushButton::clicked, this, [this] { openAccessoryPage(QStringLiteral("shop")); });
+    if (auto *plus = findChild<QPushButton *>(QStringLiteral("B_PlusRecord")))
+        connect(plus, &QPushButton::clicked, this, [this] { openAccessoryPage(QStringLiteral("plus")); });
     if (auto *legal = findChild<QLabel *>(QStringLiteral("PB_Legal")))
     {
         legal->installEventFilter(this);
@@ -650,8 +660,17 @@ void MainWindow::refreshPkmEditor()
     applyFieldValue(QStringLiteral("L_Characteristic"), _editor.getField(QStringLiteral("L_Characteristic")));
     applyFieldValue(QStringLiteral("Label_HiddenPowerPower"), _editor.getField(QStringLiteral("Label_HiddenPowerPower")));
     setLegalityIcon(findChild<QLabel *>(QStringLiteral("PB_Legal")), _editor.legalityValid());
-    if (auto *ribbons = findChild<QPushButton *>(QStringLiteral("BTN_Ribbons")))
-        ribbons->setVisible(_editor.hasAccessory());
+    const auto pages = _editor.accessoryPages().split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    const auto showPage = [&](const char *button, const char *page) {
+        if (auto *btn = findChild<QPushButton *>(QString::fromLatin1(button)))
+            btn->setVisible(pages.contains(QString::fromLatin1(page)));
+    };
+    showPage("BTN_Ribbons", "ribbons");
+    showPage("BTN_History", "memories");
+    showPage("BTN_Medals", "medals");
+    showPage("B_RelearnFlags", "tech");
+    showPage("B_MoveShop", "shop");
+    showPage("B_PlusRecord", "plus");
     _pkmBusy = false;
 }
 

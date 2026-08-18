@@ -188,6 +188,21 @@ void fillMoves(QWidget *tab)
         grid->addWidget(combo(gb, QStringLiteral("CB_PPUps%1").arg(i)), i, 2);
     }
     layout->addWidget(gb);
+    auto *flags = new QWidget(tab);
+    flags->setObjectName(QStringLiteral("FLP_MoveFlags"));
+    auto *flagLay = new QHBoxLayout(flags);
+    flagLay->setContentsMargins(0, 0, 0, 0);
+    auto *relearn = new QPushButton(QStringLiteral("Relearn Flags"), flags);
+    relearn->setObjectName(QStringLiteral("B_RelearnFlags"));
+    auto *shop = new QPushButton(QStringLiteral("Move Shop"), flags);
+    shop->setObjectName(QStringLiteral("B_MoveShop"));
+    auto *plus = new QPushButton(QStringLiteral("Plus Flags"), flags);
+    plus->setObjectName(QStringLiteral("B_PlusRecord"));
+    flagLay->addWidget(relearn);
+    flagLay->addWidget(shop);
+    flagLay->addWidget(plus);
+    flagLay->addStretch();
+    layout->addWidget(flags);
     layout->addStretch();
 }
 
@@ -229,7 +244,13 @@ void fillOt(QWidget *tab)
     editorLay->setContentsMargins(0, 0, 0, 0);
     auto *ribbons = new QPushButton(QStringLiteral("Ribbons"), editors);
     ribbons->setObjectName(QStringLiteral("BTN_Ribbons"));
+    auto *medals = new QPushButton(QStringLiteral("Medals"), editors);
+    medals->setObjectName(QStringLiteral("BTN_Medals"));
+    auto *history = new QPushButton(QStringLiteral("Memories"), editors);
+    history->setObjectName(QStringLiteral("BTN_History"));
     editorLay->addWidget(ribbons);
+    editorLay->addWidget(medals);
+    editorLay->addWidget(history);
     editorLay->addStretch();
     layout->addRow(editors);
 }

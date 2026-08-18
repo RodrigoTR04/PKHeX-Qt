@@ -180,11 +180,16 @@ public sealed class EditorSession
         _accessory = null;
     }
 
-    public string AccessoryDocument()
+    public string AccessoryDocument() => AccessoryDocument("ribbons");
+
+    public string AccessoryDocument(string page)
     {
         OpenAccessory();
+        Accessory.Select(page);
         return Accessory.ToJson();
     }
+
+    public string AccessoryPages() => string.Join('\n', EntityAccessoryEditor.PageIdsFor(RequireCurrent()));
 
     public string AccessoryModify(string action, string json)
     {
