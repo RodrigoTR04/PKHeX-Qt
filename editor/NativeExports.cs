@@ -762,6 +762,82 @@ public static class NativeExports
         }
     }
 
+    public static int HasWondercards(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().HasWondercards ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PrepareWondercards(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().WondercardDocument();
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int WondercardModify(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8AllowEmpty(arg, size);
+            var split = raw.IndexOf('\n');
+            if (split <= 0)
+                return -1;
+            _preparedText = RequireSession().WondercardModify(raw[..split], raw[(split + 1)..]);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SaveWondercards(IntPtr arg, int size)
+    {
+        try
+        {
+            RequireSession().SaveWondercardDocument(ReadUtf8AllowEmpty(arg, size));
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static int CancelWondercards(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            RequireSession().CancelWondercards();
+            return 0;
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
     public static int HasAccessory(IntPtr arg, int size)
     {
         _ = arg;

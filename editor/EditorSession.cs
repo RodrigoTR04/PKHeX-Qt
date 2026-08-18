@@ -38,6 +38,7 @@ public sealed class EditorSession
     private PkmDatabase? _pkmDatabase;
     private EncounterDatabase? _encounters;
     private EncounterDatabaseQuery _encounterQuery = new();
+    private WondercardEditor? _wondercards;
 
     private EditorSession(SaveFile sav)
     {
@@ -143,6 +144,51 @@ public sealed class EditorSession
         _pokedex?.Discard();
         _pokedex = null;
     }
+
+    public bool HasWondercards => WondercardEditor.Supports(_sav);
+
+    public void OpenWondercards() => _wondercards = WondercardEditor.Open(_sav);
+
+    public void ImportWondercard(byte[] data, string ext)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        RequireWondercards().Import(data, ext);
+    }
+
+    public void SetWondercardSlot(int index) => RequireWondercards().SetSlot(index);
+
+    public void SaveWondercards()
+    {
+        RequireWondercards().Save();
+        _wondercards = null;
+    }
+
+    public void CancelWondercards() => _wondercards = null;
+
+    public string WondercardDocument()
+    {
+        _wondercards ??= WondercardEditor.Open(_sav);
+        return _wondercards.ToJson();
+    }
+
+    public string WondercardModify(string action, string json)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(action);
+        _wondercards ??= WondercardEditor.Open(_sav);
+        _wondercards.Modify(action, json);
+        return _wondercards.ToJson();
+    }
+
+    public void SaveWondercardDocument(string json)
+    {
+        _wondercards ??= WondercardEditor.Open(_sav);
+        if (!string.IsNullOrWhiteSpace(json))
+            _wondercards.Modify("import", json);
+        SaveWondercards();
+    }
+
+    private WondercardEditor RequireWondercards()
+        => _wondercards ?? throw new InvalidOperationException("Wondercard album is not open.");
 
     public string PokedexDocument()
     {

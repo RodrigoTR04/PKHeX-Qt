@@ -92,4 +92,9 @@ public:
     virtual QString encounterDocument() = 0;
     virtual QString searchEncounters(const QString &json) = 0;
     virtual bool loadEncounter(int index) = 0;
+    virtual bool hasWondercards() const = 0;
+    virtual QString wondercardDocument() = 0;
+    virtual QString wondercardModify(const QString &action, const QString &json) = 0;
+    virtual bool saveWondercards(const QString &json) = 0;
+    virtual bool cancelWondercards() = 0;
 };

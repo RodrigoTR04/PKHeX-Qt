@@ -86,6 +86,11 @@ public:
     QString encounterDocument() override;
     QString searchEncounters(const QString &json) override;
     bool loadEncounter(int index) override;
+    bool hasWondercards() const override;
+    QString wondercardDocument() override;
+    QString wondercardModify(const QString &action, const QString &json) override;
+    bool saveWondercards(const QString &json) override;
+    bool cancelWondercards() override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -177,4 +182,9 @@ private:
     component_entry_point_fn _prepareEncounterDatabase{};
     component_entry_point_fn _searchEncounters{};
     component_entry_point_fn _loadEncounter{};
+    component_entry_point_fn _hasWondercards{};
+    component_entry_point_fn _prepareWondercards{};
+    component_entry_point_fn _wondercardModify{};
+    component_entry_point_fn _saveWondercards{};
+    component_entry_point_fn _cancelWondercards{};
 };

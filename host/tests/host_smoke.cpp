@@ -9,6 +9,7 @@
 #include "BatchWindow.h"
 #include "BoxExportWindow.h"
 #include "EncounterDatabaseWindow.h"
+#include "WondercardWindow.h"
 #include "PkmDatabaseWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
@@ -464,6 +465,31 @@ public:
     }
 
     bool loadEncounter(int) override
+    {
+        return true;
+    }
+
+    bool hasWondercards() const override
+    {
+        return true;
+    }
+
+    QString wondercardDocument() override
+    {
+        return QStringLiteral("{\"showUsed\":true,\"viewedSummary\":\"Potion\",\"viewedData\":\"AA==\",\"viewedExt\":\".pgf\",\"received\":[\"0123\"],\"slots\":[{\"index\":0,\"type\":\"PGF\",\"empty\":true,\"cardId\":0}]}");
+    }
+
+    QString wondercardModify(const QString &, const QString &) override
+    {
+        return wondercardDocument();
+    }
+
+    bool saveWondercards(const QString &) override
+    {
+        return true;
+    }
+
+    bool cancelWondercards() override
     {
         return true;
     }
@@ -967,6 +993,34 @@ int main(int argc, char *argv[])
         {
             std::cerr << "encounter database missing " << name.toStdString() << "\n";
             return 56;
+        }
+    }
+
+    WondercardWindow wcDialog(&window);
+    wcDialog.loadDocument(editor.wondercardDocument());
+    const QStringList wcNames{
+        QStringLiteral("B_Save"),
+        QStringLiteral("B_Cancel"),
+        QStringLiteral("B_Import"),
+        QStringLiteral("B_Output"),
+        QStringLiteral("B_UsedAll"),
+        QStringLiteral("B_UnusedAll"),
+        QStringLiteral("LB_Received"),
+        QStringLiteral("L_Received"),
+        QStringLiteral("L_Details"),
+        QStringLiteral("RTB"),
+        QStringLiteral("FLP_Gifts"),
+        QStringLiteral("mnuView"),
+        QStringLiteral("mnuSet"),
+        QStringLiteral("mnuDelete"),
+        QStringLiteral("flagDel"),
+    };
+    for (const auto &name : wcNames)
+    {
+        if (wcDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "wondercard missing " << name.toStdString() << "\n";
+            return 57;
         }
     }
 

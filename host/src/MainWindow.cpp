@@ -4,6 +4,7 @@
 #include "BatchWindow.h"
 #include "BoxExportWindow.h"
 #include "EncounterDatabaseWindow.h"
+#include "WondercardWindow.h"
 #include "PkmDatabaseWindow.h"
 #include "AboutWindow.h"
 #include "EditorBridge.h"
@@ -36,10 +37,12 @@
 #include <QEvent>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QIODevice>
 #include <QImage>
-#include <QImage>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QLabel>
@@ -395,6 +398,8 @@ void MainWindow::fillSavChrome()
     fillSavToolButtons(findChild<QWidget *>(QStringLiteral("FLP_SAVtools")));
     if (auto *items = findChild<QPushButton *>(QStringLiteral("B_OpenItemPouch")))
         connect(items, &QPushButton::clicked, this, &MainWindow::onOpenInventory);
+    if (auto *wonder = findChild<QPushButton *>(QStringLiteral("B_OpenWondercards")))
+        connect(wonder, &QPushButton::clicked, this, &MainWindow::onOpenWondercards);
     if (auto *dex = findChild<QPushButton *>(QStringLiteral("B_OpenPokedex")))
         connect(dex, &QPushButton::clicked, this, &MainWindow::onOpenPokedex);
     if (auto *trainer = findChild<QPushButton *>(QStringLiteral("B_OpenTrainerInfo")))
@@ -422,6 +427,57 @@ void MainWindow::onOpenInventory()
     });
     if (dialog.exec() == QDialog::Accepted)
         _editor.saveInventory(dialog.document());
+}
+
+void MainWindow::onOpenWondercards()
+{
+    if (!_editor.hasSession() || !_editor.hasWondercards())
+        return;
+    WondercardWindow dialog(this);
+    dialog.loadDocument(_editor.wondercardDocument());
+    connect(&dialog, &WondercardWindow::modifyRequested, this, [&](const QString &action) {
+        const QString next = _editor.wondercardModify(action, dialog.document());
+        if (!next.isEmpty())
+            dialog.loadDocument(next);
+    });
+    connect(&dialog, &WondercardWindow::importRequested, this, [&](const QString &path) {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::warning(this, windowTitle(), tr("Could not read that mystery gift."));
+            return;
+        }
+        QJsonObject payload{
+            {QStringLiteral("viewedData"), QString::fromLatin1(file.readAll().toBase64())},
+            {QStringLiteral("viewedExt"), QFileInfo(path).suffix().isEmpty()
+                ? QString()
+                : QLatin1Char('.') + QFileInfo(path).suffix()},
+        };
+        const QString next = _editor.wondercardModify(QStringLiteral("import"),
+            QString::fromUtf8(QJsonDocument(payload).toJson(QJsonDocument::Compact)));
+        if (next.isEmpty())
+        {
+            QMessageBox::warning(this, windowTitle(), tr("File is not a Mystery Gift."));
+            return;
+        }
+        dialog.loadDocument(next);
+    });
+    connect(&dialog, &WondercardWindow::exportRequested, this, [&](const QString &path) {
+        const auto root = QJsonDocument::fromJson(dialog.document().toUtf8()).object();
+        const auto bytes = QByteArray::fromBase64(root.value(QStringLiteral("viewedData")).toString().toLatin1());
+        if (bytes.isEmpty())
+        {
+            QMessageBox::warning(this, windowTitle(), tr("No Mystery Gift data found in loaded slot!"));
+            return;
+        }
+        QFile file(path);
+        if (!file.open(QIODevice::WriteOnly) || file.write(bytes) != bytes.size())
+            QMessageBox::warning(this, windowTitle(), tr("Could not export that mystery gift."));
+    });
+    if (dialog.exec() == QDialog::Accepted)
+        _editor.saveWondercards(dialog.document());
+    else
+        _editor.cancelWondercards();
 }
 
 void MainWindow::onOpenPokedex()

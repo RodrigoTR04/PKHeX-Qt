@@ -63,6 +63,7 @@ private slots:
     void onDumpBox();
     void onOpenPkmDatabase();
     void onOpenEncounterDatabase();
+    void onOpenWondercards();
     void onOpenInventory();
     void onOpenPokedex();
     void onOpenSaveBlock();

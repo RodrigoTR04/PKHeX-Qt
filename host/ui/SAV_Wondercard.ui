@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SAV_Wondercard</class>
+ <widget class="QDialog" name="SAV_Wondercard">
+  <property name="windowTitle">
+   <string>Mystery Gift I/O</string>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>640</width>
+    <height>420</height>
+   </size>
+  </property>
+  <layout class="QHBoxLayout" name="WondercardRoot">
+   <item>
+    <layout class="QVBoxLayout" name="AlbumCol">
+     <item>
+      <widget class="QTableWidget" name="FLP_Gifts">
+       <property name="columnCount">
+        <number>3</number>
+       </property>
+       <column>
+        <property name="text">
+         <string>#</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Type</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Card</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="UsedRow">
+       <item>
+        <widget class="QPushButton" name="B_UnusedAll">
+         <property name="text">
+          <string>All Unused</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="B_UsedAll">
+         <property name="text">
+          <string>All Used</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="DetailCol">
+     <item>
+      <widget class="QLabel" name="L_Details">
+       <property name="text">
+        <string>Details:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPlainTextEdit" name="RTB"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="L_Received">
+       <property name="text">
+        <string>Received List:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="LB_Received"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="IoRow">
+       <item>
+        <widget class="QPushButton" name="B_Import">
+         <property name="text">
+          <string>Import</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="B_Output">
+         <property name="text">
+          <string>Export</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="L_QR">
+         <property name="text">
+          <string>QR!</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="SaveRow">
+       <item>
+        <widget class="QPushButton" name="B_Cancel">
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="B_Save">
+         <property name="text">
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

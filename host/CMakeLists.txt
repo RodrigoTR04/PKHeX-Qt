@@ -72,6 +72,7 @@ set(HOST_SOURCES
   src/BoxExportWindow.cpp
   src/PkmDatabaseWindow.cpp
   src/EncounterDatabaseWindow.cpp
+  src/WondercardWindow.cpp
   src/LangCatalog.cpp
   src/SavToolChrome.cpp
   src/SlotChrome.cpp
@@ -92,6 +93,7 @@ set(HOST_HEADERS
   src/BoxExportWindow.h
   src/PkmDatabaseWindow.h
   src/EncounterDatabaseWindow.h
+  src/WondercardWindow.h
   src/EditorBridge.h
   src/LangCatalog.h
   src/SavToolChrome.h
@@ -118,6 +120,7 @@ add_executable(pkhex-qt
   ui/BoxExporter.ui
   ui/SAV_Database.ui
   ui/SAV_Encounters.ui
+  ui/SAV_Wondercard.ui
 )
 target_include_directories(pkhex-qt PRIVATE src "${NETHOST_DIR}")
 target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets Qt6::Multimedia nethost ${CMAKE_DL_LIBS})
@@ -146,6 +149,7 @@ add_executable(pkhex-qt-host-tests
   ui/BoxExporter.ui
   ui/SAV_Database.ui
   ui/SAV_Encounters.ui
+  ui/SAV_Wondercard.ui
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
 target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets Qt6::Multimedia)

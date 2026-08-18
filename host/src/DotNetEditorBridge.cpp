@@ -211,6 +211,11 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("PrepareEncounterDatabase", &_prepareEncounterDatabase);
     load("SearchEncounters", &_searchEncounters);
     load("LoadEncounter", &_loadEncounter);
+    load("HasWondercards", &_hasWondercards);
+    load("PrepareWondercards", &_prepareWondercards);
+    load("WondercardModify", &_wondercardModify);
+    load("SaveWondercards", &_saveWondercards);
+    load("CancelWondercards", &_cancelWondercards);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -693,6 +698,35 @@ QString DotNetEditorBridge::searchEncounters(const QString &json)
 bool DotNetEditorBridge::loadEncounter(int index)
 {
     return call(_loadEncounter, QString::number(index));
+}
+
+bool DotNetEditorBridge::hasWondercards() const
+{
+    if (_hasWondercards == nullptr)
+        return false;
+    return _hasWondercards(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::wondercardDocument()
+{
+    return readText(_prepareWondercards, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::wondercardModify(const QString &action, const QString &json)
+{
+    return readText(_wondercardModify, action + QLatin1Char('\n') + json);
+}
+
+bool DotNetEditorBridge::saveWondercards(const QString &json)
+{
+    return call(_saveWondercards, json);
+}
+
+bool DotNetEditorBridge::cancelWondercards()
+{
+    if (_cancelWondercards == nullptr)
+        return false;
+    return _cancelWondercards(nullptr, 0) == 0;
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const
