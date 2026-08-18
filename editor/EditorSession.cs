@@ -12,6 +12,7 @@ public sealed class EditorSession
 
     public byte[] CurrentEntity { get; private set; } = [];
 
+    public bool HasBox => _sav.HasBox;
     public int BoxCount => _sav.BoxCount;
     public int BoxSlotCount => _sav.BoxSlotCount;
     public int PartySlotCount => 6;
@@ -258,6 +259,25 @@ public sealed class EditorSession
         if (result.Ok)
             _sav.State.Edited = true;
         return new BatchRunResult(result.Ok, result.Message);
+    }
+
+    public int ExportBoxes(string destPath, BoxExportSettings settings, string? namerName = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(destPath);
+        ArgumentNullException.ThrowIfNull(settings);
+        return BoxExport.Export(_sav, destPath, ResolveNamer(namerName), settings);
+    }
+
+    private static IFileNamer<PKM> ResolveNamer(string? namerName)
+    {
+        if (string.IsNullOrEmpty(namerName))
+            return EntityFileNamer.Namer;
+        foreach (var namer in EntityFileNamer.AvailableNamers)
+        {
+            if (namer.Name == namerName)
+                return namer;
+        }
+        return EntityFileNamer.Namer;
     }
 
     public byte[] Export() => Export([]);

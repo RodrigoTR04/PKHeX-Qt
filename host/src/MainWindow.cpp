@@ -2,6 +2,7 @@
 
 #include "AccessoryWindow.h"
 #include "BatchWindow.h"
+#include "BoxExportWindow.h"
 #include "AboutWindow.h"
 #include "EditorBridge.h"
 #include "InventoryWindow.h"
@@ -80,6 +81,8 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     connect(_ui->Menu_ShowdownExportCurrentBox, &QAction::triggered, this, &MainWindow::onShowdownExportBox);
     connect(_ui->Menu_About, &QAction::triggered, this, &MainWindow::onMenuAbout);
     connect(_ui->Menu_BatchEditor, &QAction::triggered, this, &MainWindow::onOpenBatch);
+    connect(_ui->Menu_DumpBoxes, &QAction::triggered, this, &MainWindow::onDumpBoxes);
+    connect(_ui->Menu_DumpBox, &QAction::triggered, this, &MainWindow::onDumpBox);
     updateExportEnabled();
 }
 
@@ -211,6 +214,8 @@ void MainWindow::updateExportEnabled()
     _ui->Menu_ShowdownExportPKM->setEnabled(open);
     _ui->Menu_ShowdownExportParty->setEnabled(open);
     _ui->Menu_ShowdownExportCurrentBox->setEnabled(open);
+    _ui->Menu_DumpBoxes->setEnabled(open && _editor.hasBox());
+    _ui->Menu_DumpBox->setEnabled(open && _editor.hasBox());
     if (auto *qr = findChild<QAction *>(QStringLiteral("mnuLQR")))
         qr->setEnabled(open);
 }
@@ -250,6 +255,43 @@ void MainWindow::onOpenBatch()
         refreshPkmEditor();
     });
     dialog.exec();
+}
+
+void MainWindow::onDumpBoxes()
+{
+    openBoxExport(QStringLiteral("All"));
+}
+
+void MainWindow::onDumpBox()
+{
+    openBoxExport(QStringLiteral("Current"));
+}
+
+void MainWindow::openBoxExport(const QString &scopeLock)
+{
+    if (!_editor.hasSession() || !_editor.hasBox())
+        return;
+    BoxExportWindow dialog(this);
+    dialog.loadDocument(_editor.boxExportDocument());
+    dialog.lockScope(scopeLock);
+    connect(&dialog, &BoxExportWindow::exportRequested, this, [&] {
+        const QString folder = QFileDialog::getExistingDirectory(this, tr("Select a folder to export the boxes to."));
+        if (folder.isEmpty())
+            return;
+        const QString raw = _editor.exportBoxes(folder, dialog.document());
+        const auto split = raw.indexOf(QLatin1Char('\n'));
+        const QString kind = split < 0 ? raw : raw.left(split);
+        const QString message = split < 0 ? raw : raw.mid(split + 1);
+        if (kind == QLatin1String("ok"))
+        {
+            if (!message.isEmpty())
+                QMessageBox::information(this, windowTitle(), message);
+        }
+        else
+            QMessageBox::warning(this, windowTitle(), message.isEmpty() ? tr("Invalid Box Data, unable to dump.") : message);
+    });
+    dialog.exec();
+    _editor.saveBoxExportSettings(dialog.document());
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

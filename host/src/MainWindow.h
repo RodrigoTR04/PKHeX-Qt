@@ -59,6 +59,8 @@ private slots:
     void onShowdownExportBox();
     void onMenuAbout();
     void onOpenBatch();
+    void onDumpBoxes();
+    void onDumpBox();
     void onOpenInventory();
     void onOpenPokedex();
     void onOpenSaveBlock();
@@ -87,6 +89,7 @@ private:
     void applyFieldValue(const QString &name, const QString &value);
     void writeField(const QString &name, const QString &value);
     void copyShowdown(const QString &scope, const QString &success);
+    void openBoxExport(const QString &scopeLock);
     void copyEntityToClipboard();
     void pasteEntityFromClipboard();
     bool textWidgetHasFocus() const;

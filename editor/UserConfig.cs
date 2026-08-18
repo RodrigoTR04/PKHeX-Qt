@@ -25,6 +25,8 @@ public sealed class UserConfig
     public string TemplatePath { get; set; } = "template";
     public string SoundPath { get; set; } = "sounds";
     public bool HoverSlotPlayCry { get; set; } = true;
+    public BoxExportSettings BoxExport { get; set; } = new();
+    public string DefaultBoxExportNamer { get; set; } = "Default";
 
     [JsonIgnore]
     public string FilePath => Path.Combine(Root, FileName);

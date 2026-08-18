@@ -7,6 +7,7 @@
 #include "PokedexWindow.h"
 #include "SaveBlockWindow.h"
 #include "BatchWindow.h"
+#include "BoxExportWindow.h"
 #include "MainWindow.h"
 #include "SplashScreen.h"
 
@@ -413,6 +414,26 @@ public:
     QString runBatch(const QString &, const QString &) override
     {
         return QStringLiteral("ok\nModified.");
+    }
+
+    bool hasBox() const override
+    {
+        return session;
+    }
+
+    QString boxExportDocument() override
+    {
+        return QStringLiteral("{\"namer\":\"Default\",\"namers\":[\"Default\"],\"settings\":{\"scope\":\"All\",\"folderCreation\":\"None\",\"folderPrefix\":\"BoxName\",\"emptySlots\":\"Skip\",\"fileIndexPrefix\":\"None\",\"notify\":\"NotifyResult\"}}");
+    }
+
+    QString exportBoxes(const QString &, const QString &) override
+    {
+        return QStringLiteral("ok\nDumped Box(es) (1 pk) to path:\n/tmp");
+    }
+
+    bool saveBoxExportSettings(const QString &) override
+    {
+        return true;
     }
 };
 
@@ -846,6 +867,25 @@ int main(int argc, char *argv[])
         {
             std::cerr << "batch missing " << name.toStdString() << "\n";
             return 53;
+        }
+    }
+
+    BoxExportWindow boxExportDialog(&window);
+    boxExportDialog.loadDocument(editor.boxExportDocument());
+    const QStringList boxExportNames{
+        QStringLiteral("B_Export"),
+        QStringLiteral("CB_Namer"),
+        QStringLiteral("L_Namer"),
+        QStringLiteral("PG_Settings"),
+        QStringLiteral("CB_Scope"),
+        QStringLiteral("CB_EmptySlots"),
+    };
+    for (const auto &name : boxExportNames)
+    {
+        if (boxExportDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "box export missing " << name.toStdString() << "\n";
+            return 54;
         }
     }
 

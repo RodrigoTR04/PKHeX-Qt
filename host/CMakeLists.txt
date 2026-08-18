@@ -69,6 +69,7 @@ set(HOST_SOURCES
     src/AccessoryWindow.cpp
     src/SaveBlockWindow.cpp
   src/BatchWindow.cpp
+  src/BoxExportWindow.cpp
   src/LangCatalog.cpp
   src/SavToolChrome.cpp
   src/SlotChrome.cpp
@@ -86,6 +87,7 @@ set(HOST_HEADERS
     src/AccessoryWindow.h
     src/SaveBlockWindow.h
   src/BatchWindow.h
+  src/BoxExportWindow.h
   src/EditorBridge.h
   src/LangCatalog.h
   src/SavToolChrome.h
@@ -109,6 +111,7 @@ add_executable(pkhex-qt
   ui/RibbonEditor.ui
   ui/SAV_SimpleTrainer.ui
   ui/BatchEditor.ui
+  ui/BoxExporter.ui
 )
 target_include_directories(pkhex-qt PRIVATE src "${NETHOST_DIR}")
 target_link_libraries(pkhex-qt PRIVATE Qt6::Widgets Qt6::Multimedia nethost ${CMAKE_DL_LIBS})
@@ -134,6 +137,7 @@ add_executable(pkhex-qt-host-tests
   ui/RibbonEditor.ui
   ui/SAV_SimpleTrainer.ui
   ui/BatchEditor.ui
+  ui/BoxExporter.ui
 )
 target_include_directories(pkhex-qt-host-tests PRIVATE src)
 target_link_libraries(pkhex-qt-host-tests PRIVATE Qt6::Widgets Qt6::Multimedia)

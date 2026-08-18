@@ -201,6 +201,10 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("CancelSaveBlock", &_cancelSaveBlock);
     load("PrepareBatchProperties", &_prepareBatchProperties);
     load("RunBatch", &_runBatch);
+    load("HasBox", &_hasBox);
+    load("PrepareBoxExport", &_prepareBoxExport);
+    load("ExportBoxes", &_exportBoxes);
+    load("SaveBoxExportSettings", &_saveBoxExportSettings);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -631,6 +635,28 @@ QString DotNetEditorBridge::batchProperties()
 QString DotNetEditorBridge::runBatch(const QString &scope, const QString &instructions)
 {
     return readText(_runBatch, scope + QLatin1Char('\n') + instructions);
+}
+
+bool DotNetEditorBridge::hasBox() const
+{
+    if (_hasBox == nullptr)
+        return false;
+    return _hasBox(nullptr, 0) == 1;
+}
+
+QString DotNetEditorBridge::boxExportDocument()
+{
+    return readText(_prepareBoxExport, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::exportBoxes(const QString &destPath, const QString &json)
+{
+    return readText(_exportBoxes, destPath + QLatin1Char('\n') + json);
+}
+
+bool DotNetEditorBridge::saveBoxExportSettings(const QString &json)
+{
+    return call(_saveBoxExportSettings, json);
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

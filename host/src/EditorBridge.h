@@ -82,4 +82,8 @@ public:
     virtual bool cancelSaveBlock() = 0;
     virtual QString batchProperties() = 0;
     virtual QString runBatch(const QString &scope, const QString &instructions) = 0;
+    virtual bool hasBox() const = 0;
+    virtual QString boxExportDocument() = 0;
+    virtual QString exportBoxes(const QString &destPath, const QString &json) = 0;
+    virtual bool saveBoxExportSettings(const QString &json) = 0;
 };

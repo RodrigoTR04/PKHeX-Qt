@@ -76,6 +76,10 @@ public:
     bool cancelSaveBlock() override;
     QString batchProperties() override;
     QString runBatch(const QString &scope, const QString &instructions) override;
+    bool hasBox() const override;
+    QString boxExportDocument() override;
+    QString exportBoxes(const QString &destPath, const QString &json) override;
+    bool saveBoxExportSettings(const QString &json) override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -157,4 +161,8 @@ private:
     component_entry_point_fn _cancelSaveBlock{};
     component_entry_point_fn _prepareBatchProperties{};
     component_entry_point_fn _runBatch{};
+    component_entry_point_fn _hasBox{};
+    component_entry_point_fn _prepareBoxExport{};
+    component_entry_point_fn _exportBoxes{};
+    component_entry_point_fn _saveBoxExportSettings{};
 };

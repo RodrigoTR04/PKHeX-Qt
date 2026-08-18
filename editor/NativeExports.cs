@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using PKHeX.Core;
 
 namespace PKHeX.Editor;
 
@@ -979,6 +980,78 @@ public static class NativeExports
         {
             _preparedText = null;
             return -1;
+        }
+    }
+
+    public static int HasBox(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().HasBox ? 1 : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PrepareBoxExport(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = BoxExportWire.Prepare(App.Config);
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int ExportBoxes(IntPtr arg, int size)
+    {
+        try
+        {
+            var raw = ReadUtf8(arg, size);
+            var split = raw.IndexOf('\n');
+            if (split <= 0)
+                return -1;
+            var dest = raw[..split];
+            var wire = BoxExportWire.Parse(raw[(split + 1)..]);
+            wire.Apply(App.Config);
+            var settings = wire.Settings ?? BoxExportSettings.Default;
+            var count = RequireSession().ExportBoxes(dest, settings, wire.Namer);
+            if (count < 0)
+                _preparedText = "err\n" + MessageStrings.MsgSaveBoxExportInvalid;
+            else if (settings.Notify == BoxExportNofify.Silent)
+                _preparedText = "ok\n";
+            else
+                _preparedText = "ok\n" + string.Format(MessageStrings.MsgSaveBoxExportPathCount, count) + "\n" + dest;
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int SaveBoxExportSettings(IntPtr arg, int size)
+    {
+        try
+        {
+            BoxExportWire.Parse(ReadUtf8(arg, size)).Apply(App.Config);
+            App.SaveConfig();
+            return 0;
+        }
+        catch
+        {
+            return 1;
         }
     }
 
