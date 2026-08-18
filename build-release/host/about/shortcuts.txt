@@ -1,0 +1,11 @@
+CTRL-O: Open
+CTRL-S: Export PKM
+CTRL-E: Export SAV
+CTRL-B: Export BAK
+CTRL-Q: Quit
+CTRL-P: Open About PKHeX
+CTRL-T: Import Showdown Set
+CTRL-SHIFT-T: Export Showdown Set
+
+Alt + Click on Preview Sprite to load from a QR url on your clipboard.
+Shift or Alt + Click on Preview Sprite to open QR.

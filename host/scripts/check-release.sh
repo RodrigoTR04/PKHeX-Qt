@@ -39,8 +39,9 @@ if ! ldd "$dest/plugins/platforms/libqxcb.so" 2>/dev/null | grep -q 'libQt6Gui.s
   echo "bundled xcb plugin is not linked to Qt 6" >&2
   fail=1
 fi
-if ! find "$dest/plugins/multimedia" -name '*.so' 2>/dev/null | grep -q .; then
-  echo "missing bundled Qt multimedia plugin" >&2
+if [ -e "$dest/plugins/multimedia/libffmpegmediaplugin.so" ] || \
+   [ -e "$dest/plugins/multimedia/libgstreamermediaplugin.so" ]; then
+  echo "do not bundle Qt FFmpeg/GStreamer plugins; they crash on startup" >&2
   fail=1
 fi
 if [ ! -e "$dest/dotnet/libSkiaSharp.so" ]; then
@@ -87,7 +88,18 @@ if [ -z "$icu" ]; then
 fi
 
 if [ -x "$dest/pkhex-qt" ]; then
-  :
+  if command -v timeout >/dev/null 2>&1; then
+    status=0
+    QT_QPA_PLATFORM=offscreen timeout 3 "$dest/pkhex-qt" >/dev/null 2>&1 || status=$?
+    case "$status" in
+      0|124)
+        ;;
+      127|132|134|136|139)
+        echo "pkhex-qt failed to start (exit $status)" >&2
+        fail=1
+        ;;
+    esac
+  fi
 else
   echo "pkhex-qt is not executable" >&2
   fail=1

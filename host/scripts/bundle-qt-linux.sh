@@ -120,11 +120,14 @@ copy_plugin imageformats/libqico.so
 copy_plugin imageformats/libqgif.so
 copy_plugin tls/libqopensslbackend.so
 copy_plugin platforminputcontexts/libcomposeplatforminputcontextplugin.so
-copy_plugin_dir multimedia
-copy_plugin_dir audio
+
+# Do not ship Qt FFmpeg/GStreamer plugins. Closing over libffmpegmediaplugin.so
+# pulls avcodec, Qt Quick/QML, gdk-pixbuf, glycin, … then dlopen segfaults in
+# ld.so when MainWindow constructs QSoundEffect. Cries stay silent until a
+# small audio backend exists; the Host must still open.
 
 # Close over libs that only appear as deps of other bundled libs (XcbQpa,
-# FFmpeg, ICU, xcb-cursor, …). Do not walk dest/dotnet.
+# ICU, xcb-cursor, …). Do not walk dest/dotnet.
 nprev=-1
 while :; do
   n=0

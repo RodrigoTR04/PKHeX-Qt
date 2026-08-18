@@ -1,0 +1,27 @@
+# ninja log v7
+2	536	1787065628828328021	host/pkhex-qt_autogen/timestamp	197dab8a9114dec4
+2	536	1787065628828328021	host/pkhex-qt_autogen/mocs_compilation.cpp	197dab8a9114dec4
+2	536	1787065628828328021	/mnt/557377b4-8a41-467d-a6ab-9205ddc5becc/Documents/Projects/PKHeX-Qt/build-release/host/pkhex-qt_autogen/timestamp	197dab8a9114dec4
+2	536	1787065628828328021	/mnt/557377b4-8a41-467d-a6ab-9205ddc5becc/Documents/Projects/PKHeX-Qt/build-release/host/pkhex-qt_autogen/mocs_compilation.cpp	197dab8a9114dec4
+537	3155	1787065628837850719	host/CMakeFiles/pkhex-qt.dir/src/QrWindow.cpp.o	57ae9078ccc056bd
+537	3190	1787065628837384999	host/CMakeFiles/pkhex-qt.dir/src/main.cpp.o	6d0075afe4d2d0d0
+537	3615	1787065628836429845	host/CMakeFiles/pkhex-qt.dir/pkhex-qt_autogen/mocs_compilation.cpp.o	1e83bc773d7f6ff1
+537	3629	1787065628837760390	host/CMakeFiles/pkhex-qt.dir/src/SplashScreen.cpp.o	49c8cc1d8c3e17f2
+538	3745	1787065628838455257	host/CMakeFiles/pkhex-qt.dir/src/BoxExportWindow.cpp.o	e2c8ef0fa9f4dda6
+537	3757	1787065628837608626	host/CMakeFiles/pkhex-qt.dir/src/AboutWindow.cpp.o	f8c9961b21608de0
+540	3818	1787065628840315651	host/CMakeFiles/pkhex-qt.dir/src/LangCatalog.cpp.o	625af2cd869c9335
+537	4069	1787065628838050962	host/CMakeFiles/pkhex-qt.dir/src/PokedexWindow.cpp.o	8f0f7f1e255d58a
+538	4092	1787065628838551948	host/CMakeFiles/pkhex-qt.dir/src/PkmDatabaseWindow.cpp.o	a411f0695e99fcec
+537	4138	1787065628837676253	host/CMakeFiles/pkhex-qt.dir/src/ErrorWindow.cpp.o	9d0d425b45a6df2f
+538	4333	1787065628838364658	host/CMakeFiles/pkhex-qt.dir/src/BatchWindow.cpp.o	83bacec36476c0ad
+538	4422	1787065628838160226	host/CMakeFiles/pkhex-qt.dir/src/AccessoryWindow.cpp.o	bafe9e4659cc0a30
+537	4423	1787065628837456643	host/CMakeFiles/pkhex-qt.dir/src/DotNetEditorBridge.cpp.o	3c901b74ab19f837
+538	4428	1787065628838953297	host/CMakeFiles/pkhex-qt.dir/src/WondercardWindow.cpp.o	8e3da8b7943fee2e
+538	4561	1787065628838644370	host/CMakeFiles/pkhex-qt.dir/src/EncounterDatabaseWindow.cpp.o	87579ef342c796d9
+538	4566	1787065628838264130	host/CMakeFiles/pkhex-qt.dir/src/SaveBlockWindow.cpp.o	44d2abd86e93ea3e
+537	4665	1787065628837943141	host/CMakeFiles/pkhex-qt.dir/src/InventoryWindow.cpp.o	3f1a77cbc5583266
+3155	4946	1787065631454307225	host/CMakeFiles/pkhex-qt.dir/src/SavToolChrome.cpp.o	e43c6903d9e4c375
+3191	5132	1787065631490306940	host/CMakeFiles/pkhex-qt.dir/src/SlotChrome.cpp.o	3b09da06fb2c81ce
+537	5338	1787065628837532615	host/CMakeFiles/pkhex-qt.dir/src/MainWindow.cpp.o	93d6b356714d1583
+3617	5719	1787065631916303566	host/CMakeFiles/pkhex-qt.dir/src/PkmTabChrome.cpp.o	6853fca145d2d85a
+5719	31916	1787065634018286921	host/pkhex-qt	92091b8bffff4731
