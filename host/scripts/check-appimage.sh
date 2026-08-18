@@ -30,6 +30,14 @@ if [ ! -x "$root/AppRun" ]; then
   echo "missing AppRun" >&2
   exit 1
 fi
+if ! grep -q 'LD_LIBRARY_PATH=' "$root/AppRun"; then
+  echo "AppRun does not put the AppDir on LD_LIBRARY_PATH" >&2
+  exit 1
+fi
+if ! grep -q 'DOTNET_ROOT=' "$root/AppRun"; then
+  echo "AppRun does not pin DOTNET_ROOT to the bundled runtime" >&2
+  exit 1
+fi
 if [ ! -f "$root/pkhex-qt.desktop" ]; then
   echo "missing pkhex-qt.desktop" >&2
   exit 1

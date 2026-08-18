@@ -30,8 +30,17 @@ for dir in assets fonts lang about dotnet; do
     cp -a "$build_dir/$dir" "$dest/"
   fi
 done
+if [ ! -f "$dest/dotnet/libcoreclr.so" ]; then
+  echo "missing self-contained .NET runtime (dotnet/libcoreclr.so); configure with -DPKHEXQT_SELF_CONTAINED=ON" >&2
+  exit 1
+fi
 
 "$here/bundle-qt-linux.sh" "$dest" "$dest/pkhex-qt"
+
+skia=$(find "$dest/dotnet" -name 'libSkiaSharp.so' 2>/dev/null | head -n 1)
+if [ -n "$skia" ] && command -v patchelf >/dev/null 2>&1; then
+  patchelf --set-rpath '$ORIGIN:$ORIGIN/..' "$skia"
+fi
 
 printf '%s\n' \
   'PKHeX Qt — incomplete public build' \

@@ -30,9 +30,25 @@ need dotnet/PKHeX.Editor.runtimeconfig.json
 need dotnet/libhostfxr.so
 need dotnet/libcoreclr.so
 need plugins/platforms/libqoffscreen.so
+need plugins/platforms/libqxcb.so
 if ! ldd "$dest/plugins/platforms/libqoffscreen.so" 2>/dev/null | grep -q 'libQt6Gui.so'; then
   echo "bundled offscreen plugin is not linked to Qt 6" >&2
   fail=1
+fi
+if ! ldd "$dest/plugins/platforms/libqxcb.so" 2>/dev/null | grep -q 'libQt6Gui.so'; then
+  echo "bundled xcb plugin is not linked to Qt 6" >&2
+  fail=1
+fi
+if ! find "$dest/plugins/multimedia" -name '*.so' 2>/dev/null | grep -q .; then
+  echo "missing bundled Qt multimedia plugin" >&2
+  fail=1
+fi
+if [ ! -e "$dest/dotnet/libSkiaSharp.so" ]; then
+  skia=$(find "$dest/dotnet" -name 'libSkiaSharp.so' 2>/dev/null | head -n 1)
+  if [ -z "$skia" ]; then
+    echo "missing dotnet/libSkiaSharp.so" >&2
+    fail=1
+  fi
 fi
 
 if [ ! -d "$dest/assets/sprites" ]; then
@@ -49,6 +65,24 @@ fi
 qt_widgets=$(find "$dest" -maxdepth 1 -name 'libQt6Widgets.so*' | head -n 1)
 if [ -z "$qt_widgets" ]; then
   echo "missing bundled libQt6Widgets" >&2
+  fail=1
+fi
+qt_multimedia=$(find "$dest" -maxdepth 1 -name 'libQt6Multimedia.so*' | head -n 1)
+if [ -z "$qt_multimedia" ]; then
+  echo "missing bundled libQt6Multimedia" >&2
+  fail=1
+fi
+
+qt_core=$(find "$dest" -maxdepth 1 -name 'libQt6Core.so*' | head -n 1)
+if [ -n "$qt_core" ] && command -v readelf >/dev/null 2>&1; then
+  if ! readelf -d "$qt_core" | grep -q '\$ORIGIN'; then
+    echo "bundled QtCore has no \$ORIGIN runpath; host ICU will be required" >&2
+    fail=1
+  fi
+fi
+icu=$(find "$dest" -maxdepth 1 -name 'libicui18n.so*' | head -n 1)
+if [ -z "$icu" ]; then
+  echo "missing bundled libicui18n" >&2
   fail=1
 fi
 

@@ -54,7 +54,17 @@ open(path, "wb").write(
 PY
 fi
 
-printf '%s\n' '#!/bin/sh' 'HERE=$(dirname "$(readlink -f "$0")")' 'exec "$HERE/pkhex-qt" "$@"' >"$appdir/AppRun"
+# Qt's own SONAMEs have no $ORIGIN runpath, so ICU and other bundled
+# deps are invisible unless this directory is on the loader path.
+# ubuntu-24.04 hides that: it already ships libicui18n.so.74.
+# DOTNET_ROOT pins hostfxr to the bundled runtime when a SDK is installed.
+cat >"$appdir/AppRun" <<'EOF'
+#!/bin/sh
+HERE=$(dirname "$(readlink -f "$0")")
+export LD_LIBRARY_PATH="$HERE${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export DOTNET_ROOT="$HERE/dotnet"
+exec "$HERE/pkhex-qt" "$@"
+EOF
 chmod +x "$appdir/AppRun" "$appdir/pkhex-qt"
 
 tool=${APPIMAGETOOL:-}

@@ -27,7 +27,7 @@ jobs:
             qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
             libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev \
             libxcb-cursor0 libxkbcommon-x11-0 \
-            wget imagemagick
+            wget imagemagick patchelf
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DPKHEXQT_SELF_CONTAINED=ON
@@ -84,6 +84,8 @@ jobs:
             --prerelease \
             --notes "Incomplete public build. This is not v1.
 
-          Linux x86_64 AppImage. chmod +x PKHeX_Qt-x86_64.AppImage and run it. No .NET SDK, no distro Qt package.
+          Linux x86_64 AppImage. chmod +x PKHeX_Qt-x86_64.AppImage and run it. Ships a self-contained .NET 10 runtime, Qt 6, and ICU. No .NET SDK and no distro Qt package.
+
+          Built on Ubuntu 24.04 (glibc 2.39 or newer). Uses X11 / XWayland. If the file does nothing, run APPIMAGE_EXTRACT_AND_RUN=1 ./PKHeX_Qt-x86_64.AppImage (Ubuntu 24.04 has no libfuse2).
 
           Open, edit, and save work. Subforms are still missing. GPL-3.0-or-later. Source is this tag."
