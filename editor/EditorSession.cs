@@ -278,6 +278,13 @@ public sealed class EditorSession
 
     public string SaveBlockPages() => string.Join('\n', SaveBlockEditor.PageIdsFor(_sav));
 
+    public string VisibleSavButtons() => string.Join('\n', SavToolCatalog.VisibleButtons(_sav));
+
+    public int PkmFormat => (_current ?? _sav.BlankPKM).Format;
+
+    public string VisiblePkmControls()
+        => string.Join('\n', EntityChrome.VisibleNames(_current ?? _sav.BlankPKM, _sav));
+
     public string SaveBlockDocument(string page)
     {
         OpenSaveBlock();

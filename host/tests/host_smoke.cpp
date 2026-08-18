@@ -493,6 +493,25 @@ public:
     {
         return true;
     }
+
+    QString visibleSavButtons() override
+    {
+        if (!session)
+            return {};
+        return QStringLiteral(
+            "B_OpenTrainerInfo\nB_OpenEventFlags\nB_OpenItemPouch\nB_OpenPokedex\n"
+            "B_VerifyCHK\nB_VerifySaveEntities\nB_SaveBoxBin");
+    }
+
+    QString visiblePkmControls() override
+    {
+        return session ? QStringLiteral("*") : QString();
+    }
+
+    int entityFormat() const override
+    {
+        return session ? 5 : 0;
+    }
 };
 
 int main(int argc, char *argv[])
@@ -584,6 +603,14 @@ int main(int argc, char *argv[])
         std::cerr << "items text was " << (items ? items->text().toStdString() : "null") << "\n";
         return 13;
     }
+    if (items->isHidden())
+        return 48;
+    auto *fashion = window.findChild<QPushButton *>(QStringLiteral("B_OpenFashion"));
+    if (fashion == nullptr || !fashion->isHidden())
+        return 49;
+    auto *korean = window.findChild<QPushButton *>(QStringLiteral("B_ConvertKorean"));
+    if (korean != nullptr && !korean->isHidden())
+        return 50;
 
     auto *about = window.findChild<QAction *>(QStringLiteral("Menu_About"));
     if (about == nullptr || about->text() != QLatin1String("&About PKHeX"))

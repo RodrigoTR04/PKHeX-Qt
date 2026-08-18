@@ -97,4 +97,7 @@ public:
     virtual QString wondercardModify(const QString &action, const QString &json) = 0;
     virtual bool saveWondercards(const QString &json) = 0;
     virtual bool cancelWondercards() = 0;
+    virtual QString visibleSavButtons() = 0;
+    virtual QString visiblePkmControls() = 0;
+    virtual int entityFormat() const = 0;
 };

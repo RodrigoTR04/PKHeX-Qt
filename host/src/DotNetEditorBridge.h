@@ -91,6 +91,9 @@ public:
     QString wondercardModify(const QString &action, const QString &json) override;
     bool saveWondercards(const QString &json) override;
     bool cancelWondercards() override;
+    QString visibleSavButtons() override;
+    QString visiblePkmControls() override;
+    int entityFormat() const override;
 
 private:
     using component_entry_point_fn = int (*)(void *arg, int arg_size_in_bytes);
@@ -187,4 +190,7 @@ private:
     component_entry_point_fn _wondercardModify{};
     component_entry_point_fn _saveWondercards{};
     component_entry_point_fn _cancelWondercards{};
+    component_entry_point_fn _prepareSavTools{};
+    component_entry_point_fn _preparePkmChrome{};
+    component_entry_point_fn _entityFormat{};
 };

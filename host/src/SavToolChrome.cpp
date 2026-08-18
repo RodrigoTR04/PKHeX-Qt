@@ -3,7 +3,10 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
+#include <algorithm>
+#include <vector>
 
 void fillSavToolButtons(QWidget *flow)
 {
@@ -73,6 +76,58 @@ void fillSavToolButtons(QWidget *flow)
         auto *button = new QPushButton(flow);
         button->setObjectName(QString::fromLatin1(name));
         button->setText(QString::fromLatin1(name));
+        layout->addWidget(button, index / 3, index % 3);
+        ++index;
+    }
+}
+
+void applySavToolVisibility(QWidget *window, const QStringList &visible)
+{
+    if (window == nullptr)
+        return;
+
+    static constexpr const char *kUtilities[] = {
+        "B_SaveBoxBin",
+        "B_VerifyCHK",
+        "B_VerifySaveEntities",
+        "Menu_ExportBAK",
+        "B_JPEG",
+        "B_ConvertKorean",
+    };
+    for (const char *name : kUtilities)
+    {
+        if (auto *btn = window->findChild<QPushButton *>(QString::fromLatin1(name)))
+            btn->setVisible(visible.contains(QString::fromLatin1(name)));
+    }
+
+    auto *flow = window->findChild<QWidget *>(QStringLiteral("FLP_SAVtools"));
+    if (flow == nullptr)
+        return;
+    auto *layout = qobject_cast<QGridLayout *>(flow->layout());
+    if (layout == nullptr)
+        return;
+
+    const auto buttons = flow->findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly);
+    std::vector<QPushButton *> shown;
+    for (auto *button : buttons)
+    {
+        const bool on = visible.contains(button->objectName());
+        button->setVisible(on);
+        if (on)
+            shown.push_back(button);
+    }
+    std::sort(shown.begin(), shown.end(), [](QPushButton *a, QPushButton *b) {
+        return QString::localeAwareCompare(a->text(), b->text()) < 0;
+    });
+
+    while (layout->count() > 0)
+    {
+        auto *item = layout->takeAt(0);
+        delete item;
+    }
+    int index = 0;
+    for (auto *button : shown)
+    {
         layout->addWidget(button, index / 3, index % 3);
         ++index;
     }

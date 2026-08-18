@@ -216,6 +216,9 @@ DotNetEditorBridge::DotNetEditorBridge()
     load("WondercardModify", &_wondercardModify);
     load("SaveWondercards", &_saveWondercards);
     load("CancelWondercards", &_cancelWondercards);
+    load("PrepareSavTools", &_prepareSavTools);
+    load("PreparePkmChrome", &_preparePkmChrome);
+    load("EntityFormat", &_entityFormat);
 }
 
 DotNetEditorBridge::~DotNetEditorBridge()
@@ -727,6 +730,23 @@ bool DotNetEditorBridge::cancelWondercards()
     if (_cancelWondercards == nullptr)
         return false;
     return _cancelWondercards(nullptr, 0) == 0;
+}
+
+QString DotNetEditorBridge::visibleSavButtons()
+{
+    return readText(_prepareSavTools, QStringLiteral("-"));
+}
+
+QString DotNetEditorBridge::visiblePkmControls()
+{
+    return readText(_preparePkmChrome, QStringLiteral("-"));
+}
+
+int DotNetEditorBridge::entityFormat() const
+{
+    if (_entityFormat == nullptr)
+        return 0;
+    return _entityFormat(nullptr, 0);
 }
 
 bool DotNetEditorBridge::call(component_entry_point_fn fn, const QString &path) const

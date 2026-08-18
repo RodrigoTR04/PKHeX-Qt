@@ -74,6 +74,8 @@ MainWindow::MainWindow(EditorBridge &editor, QWidget *parent)
     applyInGameFont(this);
     setWindowTitle(QStringLiteral("PKHeX Qt"));
     setAcceptDrops(true);
+    refreshSavTools();
+    refreshPkmEditor();
 
     connect(_ui->Menu_Open, &QAction::triggered, this, &MainWindow::onMenuOpen);
     connect(_ui->Menu_ExportSAV, &QAction::triggered, this, &MainWindow::onMenuExportSav);
@@ -529,19 +531,10 @@ void MainWindow::openSaveBlockPage(const QString &page)
 
 void MainWindow::refreshSavTools()
 {
-    const auto pages = _editor.hasSession()
-                           ? _editor.saveBlockPages().split(QLatin1Char('\n'), Qt::SkipEmptyParts)
-                           : QStringList{};
-    const auto show = [&](const char *button, const char *page) {
-        if (auto *btn = findChild<QPushButton *>(QString::fromLatin1(button)))
-            btn->setVisible(pages.contains(QString::fromLatin1(page)));
-    };
-    show("B_OpenTrainerInfo", "trainer");
-    show("B_OpenEventFlags", "flags");
-    show("B_OpenMiscEditor", "misc");
-    show("B_OpenFashion", "fashion");
-    show("B_OpenPokepuffs", "pokepuffs");
-    show("B_OpenOPowers", "opowers");
+    const QStringList pages = _editor.hasSession()
+                                  ? _editor.visibleSavButtons().split(QLatin1Char('\n'), Qt::SkipEmptyParts)
+                                  : QStringList{};
+    applySavToolVisibility(this, pages);
 }
 
 void MainWindow::openAccessoryPage(const QString &page)
@@ -877,7 +870,10 @@ void MainWindow::writeField(const QString &name, const QString &value)
 void MainWindow::refreshPkmEditor()
 {
     if (!_editor.hasSession())
+    {
+        applyPkmChrome(this, 0, {});
         return;
+    }
     _pkmBusy = true;
     for (const char *name : kComboFields)
         fillComboChoices(QString::fromLatin1(name));
@@ -904,6 +900,8 @@ void MainWindow::refreshPkmEditor()
     showPage("B_RelearnFlags", "tech");
     showPage("B_MoveShop", "shop");
     showPage("B_PlusRecord", "plus");
+    applyPkmChrome(this, _editor.entityFormat(),
+        _editor.visiblePkmControls().split(QLatin1Char('\n'), Qt::SkipEmptyParts));
     _pkmBusy = false;
 }
 

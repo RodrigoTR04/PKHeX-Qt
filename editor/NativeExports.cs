@@ -961,6 +961,52 @@ public static class NativeExports
         }
     }
 
+    public static int PrepareSavTools(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().VisibleSavButtons();
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
+    public static int EntityFormat(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            return RequireSession().PkmFormat;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static int PreparePkmChrome(IntPtr arg, int size)
+    {
+        _ = arg;
+        _ = size;
+        try
+        {
+            _preparedText = RequireSession().VisiblePkmControls();
+            return EncodingLength(_preparedText);
+        }
+        catch
+        {
+            _preparedText = null;
+            return -1;
+        }
+    }
+
     public static int PrepareSaveBlock(IntPtr arg, int size)
     {
         try
