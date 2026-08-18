@@ -8,9 +8,11 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QHeaderView>
+#include <QHBoxLayout>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLayoutItem>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
@@ -18,6 +20,7 @@
 #include <QTableWidgetItem>
 #include <QtGlobal>
 #include <QVariant>
+#include <QWidget>
 
 SaveBlockWindow::SaveBlockWindow(QWidget *parent)
     : QDialog(parent)
@@ -45,7 +48,7 @@ SaveBlockWindow::SaveBlockWindow(QWidget *parent)
     LangCatalog catalog;
     catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
     catalog.apply(this, QStringLiteral("SAV_SimpleTrainer"));
-    setTrainerVisible(true);
+    setPageKind(QStringLiteral("trainer"));
 }
 
 SaveBlockWindow::~SaveBlockWindow() = default;
@@ -54,30 +57,37 @@ void SaveBlockWindow::loadDocument(const QString &json)
 {
     const auto root = QJsonDocument::fromJson(json.toUtf8()).object();
     const QString page = root.value(QStringLiteral("page")).toString();
-    if (page == QLatin1String("flags") || root.value(QStringLiteral("kind")).toString() == QLatin1String("flags"))
+    const QString kind = root.value(QStringLiteral("kind")).toString();
+    if (page == QLatin1String("flags") || kind == QLatin1String("flags"))
         fillFlags(root);
+    else if (kind == QLatin1String("fields"))
+        fillFields(root);
     else
         fillTrainer(root);
     setProperty("saveBlockRoot", QVariant::fromValue(root));
 }
 
-void SaveBlockWindow::setTrainerVisible(bool visible)
+void SaveBlockWindow::setPageKind(const QString &kind)
 {
-    _ui->GB_Trainer->setVisible(visible);
-    _ui->GB_Adventure->setVisible(visible);
-    _ui->GB_Badges->setVisible(visible);
-    _ui->GB_Options->setVisible(visible);
-    _ui->GB_Map->setVisible(visible);
-    _ui->B_MaxCash->setVisible(visible);
-    _ui->B_MaxCoins->setVisible(visible);
-    _ui->GB_Flags->setVisible(!visible);
-    _ui->GB_FlagStatus->setVisible(!visible);
-    _ui->GB_Constants->setVisible(!visible);
+    const bool trainer = kind == QLatin1String("trainer");
+    const bool flags = kind == QLatin1String("flags");
+    const bool fields = kind == QLatin1String("fields");
+    _ui->GB_Trainer->setVisible(trainer);
+    _ui->GB_Adventure->setVisible(trainer);
+    _ui->GB_Badges->setVisible(trainer);
+    _ui->GB_Options->setVisible(trainer);
+    _ui->GB_Map->setVisible(trainer);
+    _ui->B_MaxCash->setVisible(trainer);
+    _ui->B_MaxCoins->setVisible(trainer);
+    _ui->GB_Flags->setVisible(flags);
+    _ui->GB_FlagStatus->setVisible(flags);
+    _ui->GB_Constants->setVisible(flags);
+    _ui->GB_BlockTools->setVisible(fields);
 }
 
 void SaveBlockWindow::fillTrainer(const QJsonObject &root)
 {
-    setTrainerVisible(true);
+    setPageKind(QStringLiteral("trainer"));
     _mapEdited = false;
     _ui->TB_OTName->setText(root.value(QStringLiteral("ot")).toString());
     _ui->CB_Gender->setCurrentIndex(root.value(QStringLiteral("gender")).toInt());
@@ -151,7 +161,7 @@ void SaveBlockWindow::fillTrainer(const QJsonObject &root)
 
 void SaveBlockWindow::fillFlags(const QJsonObject &root)
 {
-    setTrainerVisible(false);
+    setPageKind(QStringLiteral("flags"));
     auto *flags = _ui->TLP_Flags;
     flags->horizontalHeader()->setVisible(false);
     flags->verticalHeader()->setVisible(false);
@@ -201,6 +211,58 @@ void SaveBlockWindow::fillFlags(const QJsonObject &root)
     catalog.apply(this, root.value(QStringLiteral("langForm")).toString(QStringLiteral("SAV_EventFlags")));
 }
 
+void SaveBlockWindow::clearBlockActions()
+{
+    auto *layout = qobject_cast<QHBoxLayout *>(_ui->P_BlockActions->layout());
+    if (layout == nullptr)
+        return;
+    while (layout->count() > 0)
+    {
+        QLayoutItem *item = layout->takeAt(0);
+        delete item->widget();
+        delete item;
+    }
+}
+
+void SaveBlockWindow::fillFields(const QJsonObject &root)
+{
+    setPageKind(QStringLiteral("fields"));
+    auto *table = _ui->TLP_Fields;
+    table->horizontalHeader()->setVisible(false);
+    table->verticalHeader()->setVisible(false);
+    table->setShowGrid(false);
+    table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    const auto rows = root.value(QStringLiteral("fields")).toArray();
+    table->setRowCount(rows.size());
+    for (int i = 0; i < rows.size(); ++i)
+    {
+        const auto row = rows.at(i).toObject();
+        auto *spin = new QSpinBox(table);
+        spin->setMaximum(999999999);
+        spin->setValue(row.value(QStringLiteral("value")).toInt());
+        table->setCellWidget(i, 0, spin);
+        auto *label = new QTableWidgetItem(row.value(QStringLiteral("label")).toString());
+        label->setFlags(label->flags() & ~Qt::ItemIsEditable);
+        label->setData(Qt::UserRole, row.value(QStringLiteral("name")).toString());
+        table->setItem(i, 1, label);
+    }
+    clearBlockActions();
+    auto *actions = qobject_cast<QHBoxLayout *>(_ui->P_BlockActions->layout());
+    const auto names = root.value(QStringLiteral("actions")).toArray();
+    for (const auto &entry : names)
+    {
+        const QString name = entry.toString();
+        auto *button = new QPushButton(_ui->P_BlockActions);
+        button->setObjectName(name);
+        button->setText(name);
+        connect(button, &QPushButton::clicked, this, [this, name] { emit modifyRequested(name); });
+        actions->addWidget(button);
+    }
+    LangCatalog catalog;
+    catalog.loadFromFile(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("lang/lang_en.txt")));
+    catalog.apply(this, root.value(QStringLiteral("langForm")).toString());
+}
+
 QJsonObject SaveBlockWindow::collectDocument() const
 {
     QJsonObject root = property("saveBlockRoot").toJsonObject();
@@ -236,6 +298,24 @@ QJsonObject SaveBlockWindow::collectDocument() const
         root.insert(QStringLiteral("customFlagValue"), _ui->c_CustomFlag->isChecked());
         root.insert(QStringLiteral("customWork"), _ui->CB_Stats->value());
         root.insert(QStringLiteral("customWorkValue"), _ui->MT_Stat->value());
+        return root;
+    }
+    if (root.value(QStringLiteral("kind")).toString() == QLatin1String("fields"))
+    {
+        QJsonArray fields;
+        for (int i = 0; i < _ui->TLP_Fields->rowCount(); ++i)
+        {
+            const auto *label = _ui->TLP_Fields->item(i, 1);
+            if (label == nullptr)
+                continue;
+            QJsonObject row;
+            row.insert(QStringLiteral("name"), label->data(Qt::UserRole).toString());
+            row.insert(QStringLiteral("label"), label->text());
+            auto *spin = qobject_cast<QSpinBox *>(_ui->TLP_Fields->cellWidget(i, 0));
+            row.insert(QStringLiteral("value"), spin == nullptr ? 0 : spin->value());
+            fields.append(row);
+        }
+        root.insert(QStringLiteral("fields"), fields);
         return root;
     }
     root.insert(QStringLiteral("ot"), _ui->TB_OTName->text());

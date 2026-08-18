@@ -10,4 +10,5 @@ public interface ISaveBlockPage
     void ApplyJson(string json);
     void Modify(string action);
     void Save(SaveFile sav);
+    void Discard();
 }

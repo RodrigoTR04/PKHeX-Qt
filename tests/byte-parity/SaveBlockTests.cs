@@ -76,10 +76,13 @@ public sealed class SaveBlockTests
     }
 
     [Fact]
-    public void gen9_has_no_simple_trainer_page()
+    public void gen9_has_fashion_instead_of_simple_trainer()
     {
         var session = EditorSession.FromSave(BlankSaveFile.Get(GameVersion.SL));
-        Assert.False(session.HasSaveBlockEditor);
+        var pages = session.SaveBlockPages().Split('\n');
+        Assert.DoesNotContain("trainer", pages);
+        Assert.Contains("fashion", pages);
+        Assert.True(session.HasSaveBlockEditor);
     }
 
     private sealed class StubPage : ISaveBlockPage
@@ -90,5 +93,6 @@ public sealed class SaveBlockTests
         public void ApplyJson(string json) { }
         public void Modify(string action) { }
         public void Save(SaveFile sav) { }
+        public void Discard() { }
     }
 }

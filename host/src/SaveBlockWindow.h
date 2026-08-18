@@ -28,8 +28,10 @@ signals:
 private:
     void fillTrainer(const QJsonObject &root);
     void fillFlags(const QJsonObject &root);
-    void setTrainerVisible(bool visible);
+    void fillFields(const QJsonObject &root);
+    void setPageKind(const QString &kind);
     QJsonObject collectDocument() const;
+    void clearBlockActions();
 
     std::unique_ptr<Ui::SAV_SimpleTrainer> _ui;
     bool _mapEdited = false;

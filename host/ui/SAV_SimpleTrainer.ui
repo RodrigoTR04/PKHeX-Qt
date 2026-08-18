@@ -451,6 +451,29 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="GB_BlockTools">
+     <property name="title">
+      <string>Misc</string>
+     </property>
+     <layout class="QVBoxLayout" name="BlockToolsLayout">
+      <item>
+       <widget class="QTableWidget" name="TLP_Fields">
+        <property name="columnCount">
+         <number>2</number>
+        </property>
+        <column/>
+        <column/>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="P_BlockActions">
+        <layout class="QHBoxLayout" name="BlockActionsLayout"/>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="ButtonRow">
      <item>
       <spacer name="ButtonSpacer">

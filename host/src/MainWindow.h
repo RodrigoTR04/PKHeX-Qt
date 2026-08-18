@@ -74,6 +74,7 @@ private:
     void fillSlotChrome();
     void fillPkmChrome();
     void openSaveBlockPage(const QString &page);
+    void refreshSavTools();
     void bindPkmFields();
     void bindPkmContextMenu();
     void refreshStorage();

@@ -797,5 +797,26 @@ int main(int argc, char *argv[])
         }
     }
 
+    SaveBlockWindow miscDialog(&window);
+    miscDialog.loadDocument(QStringLiteral(
+        "{\"page\":\"misc\",\"kind\":\"fields\",\"langForm\":\"SAV_Misc3\","
+        "\"fields\":[{\"name\":\"coins\",\"label\":\"Coins\",\"value\":12}],"
+        "\"actions\":[\"B_Spiritomb\"]}"));
+    const QStringList miscNames{
+        QStringLiteral("B_Save"),
+        QStringLiteral("B_Cancel"),
+        QStringLiteral("TLP_Fields"),
+        QStringLiteral("B_Spiritomb"),
+        QStringLiteral("GB_BlockTools"),
+    };
+    for (const auto &name : miscNames)
+    {
+        if (miscDialog.findChild<QObject *>(name) == nullptr)
+        {
+            std::cerr << "misc missing " << name.toStdString() << "\n";
+            return 52;
+        }
+    }
+
     return 0;
 }

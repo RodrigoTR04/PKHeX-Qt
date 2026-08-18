@@ -154,6 +154,8 @@ internal sealed class EventFlagsPage : ISaveBlockPage
     public void Modify(string action)
         => throw new InvalidOperationException($"Unknown flag action '{action}'.");
 
+    public void Discard() { }
+
     public void Save(SaveFile sav)
     {
         _ = sav;

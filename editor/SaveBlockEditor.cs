@@ -21,6 +21,8 @@ public sealed class SaveBlockEditor
             Register(new SimpleTrainerPage(origin));
         if (EventFlagsPage.TryCreate(origin) is { } flags)
             Register(flags);
+        foreach (var page in SaveBlockCatalog.Create(origin))
+            Register(page);
         if (_pages.Count > 0 && !_pages.ContainsKey(_active))
             _active = _pages.Keys.First();
     }
@@ -35,6 +37,7 @@ public sealed class SaveBlockEditor
             ids.Add("trainer");
         if (EventFlagsPage.Supports(sav))
             ids.Add("flags");
+        ids.AddRange(SaveBlockCatalog.IdsFor(sav));
         return ids;
     }
 
@@ -79,7 +82,12 @@ public sealed class SaveBlockEditor
         _origin.State.Edited = true;
     }
 
-    public void Discard() => _snapshot.CopyTo(_origin.Data);
+    public void Discard()
+    {
+        foreach (var page in _pages.Values)
+            page.Discard();
+        _snapshot.CopyTo(_origin.Data);
+    }
 
     private ISaveBlockPage Active =>
         _pages.TryGetValue(_active, out var page)

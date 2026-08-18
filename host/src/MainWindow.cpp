@@ -100,6 +100,7 @@ void MainWindow::syncSession()
     refreshStorage();
     if (_editor.hasSession())
         refreshPkmEditor();
+    refreshSavTools();
 }
 
 bool MainWindow::applyStartup(const QStringList &args)
@@ -284,6 +285,14 @@ void MainWindow::fillSavChrome()
         connect(trainer, &QPushButton::clicked, this, &MainWindow::onOpenSaveBlock);
     if (auto *flags = findChild<QPushButton *>(QStringLiteral("B_OpenEventFlags")))
         connect(flags, &QPushButton::clicked, this, &MainWindow::onOpenEventFlags);
+    if (auto *misc = findChild<QPushButton *>(QStringLiteral("B_OpenMiscEditor")))
+        connect(misc, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("misc")); });
+    if (auto *fashion = findChild<QPushButton *>(QStringLiteral("B_OpenFashion")))
+        connect(fashion, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("fashion")); });
+    if (auto *puffs = findChild<QPushButton *>(QStringLiteral("B_OpenPokepuffs")))
+        connect(puffs, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("pokepuffs")); });
+    if (auto *opowers = findChild<QPushButton *>(QStringLiteral("B_OpenOPowers")))
+        connect(opowers, &QPushButton::clicked, this, [this] { openSaveBlockPage(QStringLiteral("opowers")); });
 }
 
 void MainWindow::onOpenInventory()
@@ -344,6 +353,23 @@ void MainWindow::openSaveBlockPage(const QString &page)
         _editor.saveSaveBlock(dialog.document());
     else
         _editor.cancelSaveBlock();
+}
+
+void MainWindow::refreshSavTools()
+{
+    const auto pages = _editor.hasSession()
+                           ? _editor.saveBlockPages().split(QLatin1Char('\n'), Qt::SkipEmptyParts)
+                           : QStringList{};
+    const auto show = [&](const char *button, const char *page) {
+        if (auto *btn = findChild<QPushButton *>(QString::fromLatin1(button)))
+            btn->setVisible(pages.contains(QString::fromLatin1(page)));
+    };
+    show("B_OpenTrainerInfo", "trainer");
+    show("B_OpenEventFlags", "flags");
+    show("B_OpenMiscEditor", "misc");
+    show("B_OpenFashion", "fashion");
+    show("B_OpenPokepuffs", "pokepuffs");
+    show("B_OpenOPowers", "opowers");
 }
 
 void MainWindow::openAccessoryPage(const QString &page)

@@ -125,6 +125,8 @@ internal sealed class SimpleTrainerPage : ISaveBlockPage
             throw new InvalidOperationException($"Unknown trainer action '{action}'.");
     }
 
+    public void Discard() { }
+
     public void Save(SaveFile sav)
     {
         if (_doc.Ot is { } ot && sav.OT != ot)
